@@ -11,6 +11,7 @@ Module : SwaggerPetstore.Model
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TupleSections #-}
 {-# OPTIONS_GHC -fno-warn-unused-matches -fno-warn-unused-binds -fno-warn-unused-imports #-}
 
 module SwaggerPetstore.Model where
@@ -18,12 +19,17 @@ module SwaggerPetstore.Model where
 import Data.Aeson ((.:),(.:!),(.:?),(.=))
 import Data.Text (Text)
 
-import qualified Data.Aeson as A
 import Data.Aeson (Value)
-import qualified Data.ByteString as B
 import Data.ByteString.Lazy (ByteString)
+
+import qualified Data.Aeson as A
+import qualified Data.ByteString as B
 import qualified Data.Data as P (Data, Typeable)
+import qualified Data.HashMap.Lazy as HM
 import qualified Data.Map as Map
+import qualified Data.Maybe as P
+import qualified Web.FormUrlEncoded as WH
+import qualified Web.HttpApiData as WH
 
 import qualified Data.Time as TI
 import Data.Time (UTCTime)
@@ -53,11 +59,12 @@ instance A.FromJSON ApiResponse where
 
 instance A.ToJSON ApiResponse where
   toJSON ApiResponse {..} =
-    _omitNulls
+   _omitNulls
       [ "code" .=  apiResponseCode
       , "type" .=  apiResponseType
       , "message" .=  apiResponseMessage
       ]
+
 
 -- | Construct a value of type 'ApiResponse' (by applying it's required fields, if any)
 mkApiResponse
@@ -68,7 +75,7 @@ mkApiResponse =
   , apiResponseType = Nothing
   , apiResponseMessage = Nothing
   }
-
+  
 
 
 -- ** Category
@@ -86,10 +93,11 @@ instance A.FromJSON Category where
 
 instance A.ToJSON Category where
   toJSON Category {..} =
-    _omitNulls
+   _omitNulls
       [ "id" .=  categoryId
       , "name" .=  categoryName
       ]
+
 
 -- | Construct a value of type 'Category' (by applying it's required fields, if any)
 mkCategory
@@ -99,7 +107,7 @@ mkCategory =
   { categoryId = Nothing
   , categoryName = Nothing
   }
-
+  
 
 
 -- ** Order
@@ -125,7 +133,7 @@ instance A.FromJSON Order where
 
 instance A.ToJSON Order where
   toJSON Order {..} =
-    _omitNulls
+   _omitNulls
       [ "id" .=  orderId
       , "petId" .=  orderPetId
       , "quantity" .=  orderQuantity
@@ -133,6 +141,7 @@ instance A.ToJSON Order where
       , "status" .=  orderStatus
       , "complete" .=  orderComplete
       ]
+
 
 -- | Construct a value of type 'Order' (by applying it's required fields, if any)
 mkOrder
@@ -146,7 +155,7 @@ mkOrder =
   , orderStatus = Nothing
   , orderComplete = Nothing
   }
-
+  
 
 
 -- ** Pet
@@ -172,7 +181,7 @@ instance A.FromJSON Pet where
 
 instance A.ToJSON Pet where
   toJSON Pet {..} =
-    _omitNulls
+   _omitNulls
       [ "id" .=  petId
       , "category" .=  petCategory
       , "name" .=  petName
@@ -180,6 +189,7 @@ instance A.ToJSON Pet where
       , "tags" .=  petTags
       , "status" .=  petStatus
       ]
+
 
 -- | Construct a value of type 'Pet' (by applying it's required fields, if any)
 mkPet
@@ -195,7 +205,7 @@ mkPet petName petPhotoUrls =
   , petTags = Nothing
   , petStatus = Nothing
   }
-
+  
 
 
 -- ** Tag
@@ -213,10 +223,11 @@ instance A.FromJSON Tag where
 
 instance A.ToJSON Tag where
   toJSON Tag {..} =
-    _omitNulls
+   _omitNulls
       [ "id" .=  tagId
       , "name" .=  tagName
       ]
+
 
 -- | Construct a value of type 'Tag' (by applying it's required fields, if any)
 mkTag
@@ -226,7 +237,7 @@ mkTag =
   { tagId = Nothing
   , tagName = Nothing
   }
-
+  
 
 
 -- ** User
@@ -256,7 +267,7 @@ instance A.FromJSON User where
 
 instance A.ToJSON User where
   toJSON User {..} =
-    _omitNulls
+   _omitNulls
       [ "id" .=  userId
       , "username" .=  userUsername
       , "firstName" .=  userFirstName
@@ -266,6 +277,7 @@ instance A.ToJSON User where
       , "phone" .=  userPhone
       , "userStatus" .=  userUserStatus
       ]
+
 
 -- | Construct a value of type 'User' (by applying it's required fields, if any)
 mkUser
@@ -281,7 +293,7 @@ mkUser =
   , userPhone = Nothing
   , userUserStatus = Nothing
   }
-
+  
 
 
 -- * Utils
@@ -293,6 +305,9 @@ _omitNulls = A.object . P.filter notNull
   where
     notNull (_, A.Null) = False
     notNull _ = True
+
+_toFormItem :: (WH.ToHttpApiData a, Functor f) => t -> f a -> f (t, [Text])
+_toFormItem name x = (name,) . (:[]) . WH.toQueryParam <$> x
 
 -- * Date Formatting
 

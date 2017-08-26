@@ -88,7 +88,7 @@ data MimeResponse res =
 
 -- | returns both the underlying http response and the parsed result ('MimeResponse')
 dispatchReq
-  :: (Produces req accept, MimeUnrender accept res)
+  :: (Produces req accept, MimeUnrender accept res, MimeType contentType)
   => NH.Manager -- ^ http-client Connection manager
   -> accept -- ^ "accept" 'MimeType'
   -> SwaggerPetstoreConfig -- ^ config
@@ -104,7 +104,7 @@ dispatchReq manager accept config request = do
 
 -- | like 'dispatchReq', but only returns the parsed result
 dispatchReqRes
-  :: (Produces req accept, MimeUnrender accept res)
+  :: (Produces req accept, MimeUnrender accept res, MimeType contentType)
   => NH.Manager -- ^ http-client Connection manager
   -> accept -- ^ "accept" 'MimeType'
   -> SwaggerPetstoreConfig -- ^ config
@@ -116,7 +116,7 @@ dispatchReqRes manager accept config request = do
 
 -- | like 'dispatchReq', but only returns the underlying http response
 dispatchReqLbs
-  :: (Produces req accept, MimeUnrender accept res)
+  :: (Produces req accept, MimeUnrender accept res, MimeType contentType)
   => NH.Manager -- ^ http-client Connection manager
   -> accept -- ^ "accept" 'MimeType'
   -> SwaggerPetstoreConfig -- ^ config
@@ -128,7 +128,7 @@ dispatchReqLbs manager accept config request = do
 
 -- | like 'dispatchReqLbs', but does not validate the operation is a 'Producer' of the "accept" 'MimeType'.  (Useful if the server's response is undocumented)
 dispatchReqLbsUnsafe
-  :: MimeType accept 
+  :: (MimeType accept,  MimeType contentType)
   => NH.Manager -- ^ http-client Connection manager
   -> accept -- ^ "accept" 'MimeType'
   -> SwaggerPetstoreConfig -- ^ config
@@ -140,7 +140,8 @@ dispatchReqLbsUnsafe manager accept config request = do
 
 -- | like 'dispatchReqLbsUnsafe', but does not add an "accept" header.
 dispatchReqLbsUnsafeRaw
-  :: NH.Manager -- ^ http-client Connection manager
+  :: MimeType contentType
+  => NH.Manager -- ^ http-client Connection manager
   -> SwaggerPetstoreConfig -- ^ config
   -> SwaggerPetstoreRequest req contentType res -- ^ request
   -> IO (NH.Response BCL.ByteString) -- ^ response
@@ -166,14 +167,14 @@ newtype InitRequest req contentType res accept = InitRequest
 
 -- |  Build an http-client 'Request' record from the supplied config and request
 _toInitRequest
-  :: MimeType accept
+  :: (MimeType accept, MimeType contentType)
   => accept -- ^ "accept" 'MimeType'
   -> SwaggerPetstoreConfig -- ^ config
   -> SwaggerPetstoreRequest req contentType res -- ^ request
   -> IO (InitRequest req contentType res accept) -- ^ initialized request
 _toInitRequest accept config req0 = do
   parsedReq <- NH.parseRequest $ BCL.unpack $ BCL.append (configHost config) (BCL.concat (urlPath req0))
-  let req1 = _addAcceptHeader req0 accept  
+  let req1 = _setAcceptHeader req0 accept & _setContentTypeHeader
       reqHeaders = ("User-Agent", WH.toHeader (configUserAgent config)) : paramsHeaders (params req1)
       reqQuery = NH.renderQuery True (paramsQuery (params req1))
       pReq = parsedReq { NH.method = (rMethod req1)
