@@ -37,6 +37,10 @@ import qualified Prelude as P
 
 -- * Content Negotiation
 
+-- | A type for responses without content-body.
+data NoContent = NoContent
+  deriving (P.Show, P.Eq)
+
 -- ** Mime Types
 
 data MimeJSON = MimeJSON deriving (P.Typeable)
@@ -44,8 +48,8 @@ data MimeXML = MimeXML deriving (P.Typeable)
 data MimePlainText = MimePlainText deriving (P.Typeable)
 data MimeFormUrlEncoded = MimeFormUrlEncoded deriving (P.Typeable)
 data MimeMultipartFormData = MimeMultipartFormData deriving (P.Typeable)
-data MimeNoContent = MimeNoContent deriving (P.Typeable)
 data MimeOctetStream = MimeOctetStream deriving (P.Typeable)
+data MimeNoContent = MimeNoContent deriving (P.Typeable)
 
 
 -- ** MimeType Class
@@ -136,6 +140,9 @@ instance MimeRender MimeMultipartFormData T.Text where mimeRender _ = BL.fromStr
 -- | @BCL.pack@
 instance MimeRender MimeMultipartFormData String where mimeRender _ = BCL.pack
 
+-- | @P.const BL.empty@
+instance {-# OVERLAPPING #-} MimeType a => MimeRender a NoContent where mimeRender _ = P.const BL.empty
+
 -- instance MimeRender MimeOctetStream Double where mimeRender _ = BB.toLazyByteString . BB.doubleDec
 -- instance MimeRender MimeOctetStream Float where mimeRender _ = BB.toLazyByteString . BB.floatDec
 -- instance MimeRender MimeOctetStream Int where mimeRender _ = BB.toLazyByteString . BB.intDec
@@ -169,6 +176,9 @@ instance MimeUnrender MimeOctetStream BL.ByteString where mimeUnrender _ = P.Rig
 instance MimeUnrender MimeOctetStream T.Text where mimeUnrender _ = P.left P.show . T.decodeUtf8' . BL.toStrict
 -- | @P.Right . BCL.unpack@
 instance MimeUnrender MimeOctetStream String where mimeUnrender _ = P.Right . BCL.unpack
+
+-- | @P.Right . P.const NoContent@
+instance {-# OVERLAPPING #-} MimeType a => MimeUnrender a NoContent where mimeUnrender _ = P.Right . P.const NoContent
 
 
 -- ** Request Consumes

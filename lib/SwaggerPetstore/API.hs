@@ -78,7 +78,7 @@ addPet
   :: (Consumes AddPet contentType, MimeRender contentType Pet)
   => contentType -- ^ request content-type ('MimeType')
   -> Pet -- ^ "body" -  Pet object that needs to be added to the store
-  -> SwaggerPetstoreRequest AddPet contentType ()
+  -> SwaggerPetstoreRequest AddPet contentType NoContent
 addPet _ body =
   _mkRequest "POST" ["/pet"]
     `setBodyParam` body
@@ -111,7 +111,7 @@ instance Produces AddPet MimeJSON
 -- 
 deletePet 
   :: Integer -- ^ "petId" -  Pet id to delete
-  -> SwaggerPetstoreRequest DeletePet MimeNoContent ()
+  -> SwaggerPetstoreRequest DeletePet MimeNoContent NoContent
 deletePet petId =
   _mkRequest "DELETE" ["/pet/",toPath petId]
     
@@ -214,7 +214,7 @@ updatePet
   :: (Consumes UpdatePet contentType, MimeRender contentType Pet)
   => contentType -- ^ request content-type ('MimeType')
   -> Pet -- ^ "body" -  Pet object that needs to be added to the store
-  -> SwaggerPetstoreRequest UpdatePet contentType ()
+  -> SwaggerPetstoreRequest UpdatePet contentType NoContent
 updatePet _ body =
   _mkRequest "PUT" ["/pet"]
     `setBodyParam` body
@@ -249,7 +249,7 @@ updatePetWithForm
   :: (Consumes UpdatePetWithForm contentType)
   => contentType -- ^ request content-type ('MimeType')
   -> Integer -- ^ "petId" -  ID of pet that needs to be updated
-  -> SwaggerPetstoreRequest UpdatePetWithForm contentType ()
+  -> SwaggerPetstoreRequest UpdatePetWithForm contentType NoContent
 updatePetWithForm _ petId =
   _mkRequest "POST" ["/pet/",toPath petId]
     
@@ -323,7 +323,7 @@ instance Produces UploadFile MimeJSON
 -- 
 deleteOrder 
   :: Integer -- ^ "orderId" -  ID of the order that needs to be deleted
-  -> SwaggerPetstoreRequest DeleteOrder MimeNoContent ()
+  -> SwaggerPetstoreRequest DeleteOrder MimeNoContent NoContent
 deleteOrder orderId =
   _mkRequest "DELETE" ["/store/order/",toPath orderId]
     
@@ -416,7 +416,7 @@ createUser
   :: (Consumes CreateUser contentType, MimeRender contentType User)
   => contentType -- ^ request content-type ('MimeType')
   -> User -- ^ "body" -  Created user object
-  -> SwaggerPetstoreRequest CreateUser contentType ()
+  -> SwaggerPetstoreRequest CreateUser contentType NoContent
 createUser _ body =
   _mkRequest "POST" ["/user"]
     `setBodyParam` body
@@ -443,7 +443,7 @@ createUsersWithArrayInput
   :: (Consumes CreateUsersWithArrayInput contentType, MimeRender contentType [User])
   => contentType -- ^ request content-type ('MimeType')
   -> [User] -- ^ "body" -  List of user object
-  -> SwaggerPetstoreRequest CreateUsersWithArrayInput contentType ()
+  -> SwaggerPetstoreRequest CreateUsersWithArrayInput contentType NoContent
 createUsersWithArrayInput _ body =
   _mkRequest "POST" ["/user/createWithArray"]
     `setBodyParam` body
@@ -470,7 +470,7 @@ createUsersWithListInput
   :: (Consumes CreateUsersWithListInput contentType, MimeRender contentType [User])
   => contentType -- ^ request content-type ('MimeType')
   -> [User] -- ^ "body" -  List of user object
-  -> SwaggerPetstoreRequest CreateUsersWithListInput contentType ()
+  -> SwaggerPetstoreRequest CreateUsersWithListInput contentType NoContent
 createUsersWithListInput _ body =
   _mkRequest "POST" ["/user/createWithList"]
     `setBodyParam` body
@@ -495,7 +495,7 @@ instance Produces CreateUsersWithListInput MimeJSON
 -- 
 deleteUser 
   :: Text -- ^ "username" -  The name that needs to be deleted
-  -> SwaggerPetstoreRequest DeleteUser MimeNoContent ()
+  -> SwaggerPetstoreRequest DeleteUser MimeNoContent NoContent
 deleteUser username =
   _mkRequest "DELETE" ["/user/",toPath username]
     
@@ -562,7 +562,7 @@ instance Produces LoginUser MimeJSON
 -- 
 -- 
 logoutUser 
-  :: SwaggerPetstoreRequest LogoutUser MimeNoContent ()
+  :: SwaggerPetstoreRequest LogoutUser MimeNoContent NoContent
 logoutUser =
   _mkRequest "GET" ["/user/logout"]
 
@@ -586,7 +586,7 @@ updateUser
   => contentType -- ^ request content-type ('MimeType')
   -> Text -- ^ "username" -  name that need to be updated
   -> User -- ^ "body" -  Updated user object
-  -> SwaggerPetstoreRequest UpdateUser contentType ()
+  -> SwaggerPetstoreRequest UpdateUser contentType NoContent
 updateUser _ username body =
   _mkRequest "PUT" ["/user/",toPath username]
     
