@@ -88,5 +88,5 @@ test-suite tests
   other-modules:
       ApproxEq
       Instances
-      PropJSON
+      PropMime
   default-language: Haskell2010
