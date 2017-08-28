@@ -309,6 +309,16 @@ _omitNulls = A.object . P.filter notNull
 _toFormItem :: (WH.ToHttpApiData a, Functor f) => t -> f a -> f (t, [Text])
 _toFormItem name x = (name,) . (:[]) . WH.toQueryParam <$> x
 
+_emptyToNothing :: Maybe String -> Maybe String
+_emptyToNothing (Just "") = Nothing
+_emptyToNothing x = x
+{-# INLINE _emptyToNothing #-}
+
+_memptyToNothing :: (P.Monoid a, P.Eq a) => Maybe a -> Maybe a
+_memptyToNothing (Just x) | x P.== P.mempty = Nothing
+_memptyToNothing x = x
+{-# INLINE _memptyToNothing #-}
+
 -- * Date Formatting
 
 -- | @TI.parseTimeM True TI.defaultTimeLocale _dateTimeFormat@
