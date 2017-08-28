@@ -54,7 +54,7 @@ data MimeNoContent = MimeNoContent deriving (P.Typeable)
 
 -- ** MimeType Class
 
-class MimeType mtype  where
+class P.Typeable mtype => MimeType mtype  where
   {-# MINIMAL mimeType | mimeTypes #-}
 
   mimeTypes :: P.Proxy mtype -> [ME.MediaType]
@@ -140,8 +140,8 @@ instance MimeRender MimeMultipartFormData T.Text where mimeRender _ = BL.fromStr
 -- | @BCL.pack@
 instance MimeRender MimeMultipartFormData String where mimeRender _ = BCL.pack
 
--- | @P.const BL.empty@
-instance {-# OVERLAPPING #-} MimeType a => MimeRender a NoContent where mimeRender _ = P.const BL.empty
+-- | @P.Right . P.const NoContent@
+instance MimeRender MimeNoContent NoContent where mimeRender _ = P.const BCL.empty
 
 -- instance MimeRender MimeOctetStream Double where mimeRender _ = BB.toLazyByteString . BB.doubleDec
 -- instance MimeRender MimeOctetStream Float where mimeRender _ = BB.toLazyByteString . BB.floatDec
@@ -178,7 +178,7 @@ instance MimeUnrender MimeOctetStream T.Text where mimeUnrender _ = P.left P.sho
 instance MimeUnrender MimeOctetStream String where mimeUnrender _ = P.Right . BCL.unpack
 
 -- | @P.Right . P.const NoContent@
-instance {-# OVERLAPPING #-} MimeType a => MimeUnrender a NoContent where mimeUnrender _ = P.Right . P.const NoContent
+instance MimeUnrender MimeNoContent NoContent where mimeUnrender _ = P.Right . P.const NoContent
 
 
 -- ** Request Consumes

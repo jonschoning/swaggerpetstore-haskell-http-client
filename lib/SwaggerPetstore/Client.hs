@@ -116,7 +116,7 @@ dispatchReqRes manager accept config request = do
 
 -- | like 'dispatchReq', but only returns the underlying http response
 dispatchReqLbs
-  :: (Produces req accept, MimeUnrender accept res, MimeType contentType)
+  :: (Produces req accept, MimeType contentType)
   => NH.Manager -- ^ http-client Connection manager
   -> accept -- ^ "accept" 'MimeType'
   -> SwaggerPetstoreConfig -- ^ config
@@ -128,7 +128,7 @@ dispatchReqLbs manager accept config request = do
 
 -- | like 'dispatchReqLbs', but does not validate the operation is a 'Producer' of the "accept" 'MimeType'.  (Useful if the server's response is undocumented)
 dispatchReqLbsUnsafe
-  :: (MimeType accept,  MimeType contentType)
+  :: (MimeType accept, MimeType contentType)
   => NH.Manager -- ^ http-client Connection manager
   -> accept -- ^ "accept" 'MimeType'
   -> SwaggerPetstoreConfig -- ^ config
