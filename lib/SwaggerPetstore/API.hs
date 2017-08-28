@@ -83,6 +83,8 @@ addPet _ body =
   _mkRequest "POST" ["/pet"]
     `setBodyParam` body
 
+{-# WARNING addPet "has Produces, but no response datatype schema." #-}
+
 data AddPet 
 
 -- | /Body Param/ "body" - Pet object that needs to be added to the store
@@ -115,6 +117,8 @@ deletePet
 deletePet petId =
   _mkRequest "DELETE" ["/pet/",toPath petId]
     
+
+{-# WARNING deletePet "has Produces, but no response datatype schema." #-}
 
 data DeletePet  
 instance HasOptionalParam DeletePet ApiUnderscorekey where
@@ -219,6 +223,8 @@ updatePet _ body =
   _mkRequest "PUT" ["/pet"]
     `setBodyParam` body
 
+{-# WARNING updatePet "has Produces, but no response datatype schema." #-}
+
 data UpdatePet 
 
 -- | /Body Param/ "body" - Pet object that needs to be added to the store
@@ -253,6 +259,8 @@ updatePetWithForm
 updatePetWithForm _ petId =
   _mkRequest "POST" ["/pet/",toPath petId]
     
+
+{-# WARNING updatePetWithForm "has Produces, but no response datatype schema." #-}
 
 data UpdatePetWithForm  
 
@@ -327,6 +335,8 @@ deleteOrder
 deleteOrder orderId =
   _mkRequest "DELETE" ["/store/order/",toPath orderId]
     
+
+{-# WARNING deleteOrder "has Produces, but no response datatype schema." #-}
 
 data DeleteOrder  
 -- | @application/xml@
@@ -421,6 +431,8 @@ createUser _ body =
   _mkRequest "POST" ["/user"]
     `setBodyParam` body
 
+{-# WARNING createUser "has Produces, but no response datatype schema." #-}
+
 data CreateUser 
 
 -- | /Body Param/ "body" - Created user object
@@ -447,6 +459,8 @@ createUsersWithArrayInput
 createUsersWithArrayInput _ body =
   _mkRequest "POST" ["/user/createWithArray"]
     `setBodyParam` body
+
+{-# WARNING createUsersWithArrayInput "has Produces, but no response datatype schema." #-}
 
 data CreateUsersWithArrayInput 
 
@@ -475,6 +489,8 @@ createUsersWithListInput _ body =
   _mkRequest "POST" ["/user/createWithList"]
     `setBodyParam` body
 
+{-# WARNING createUsersWithListInput "has Produces, but no response datatype schema." #-}
+
 data CreateUsersWithListInput 
 
 -- | /Body Param/ "body" - List of user object
@@ -499,6 +515,8 @@ deleteUser
 deleteUser username =
   _mkRequest "DELETE" ["/user/",toPath username]
     
+
+{-# WARNING deleteUser "has Produces, but no response datatype schema." #-}
 
 data DeleteUser  
 -- | @application/xml@
@@ -566,6 +584,8 @@ logoutUser
 logoutUser =
   _mkRequest "GET" ["/user/logout"]
 
+{-# WARNING logoutUser "has Produces, but no response datatype schema." #-}
+
 data LogoutUser  
 -- | @application/xml@
 instance Produces LogoutUser MimeXML
@@ -591,6 +611,8 @@ updateUser _ username body =
   _mkRequest "PUT" ["/user/",toPath username]
     
     `setBodyParam` body
+
+{-# WARNING updateUser "has Produces, but no response datatype schema." #-}
 
 data UpdateUser 
 

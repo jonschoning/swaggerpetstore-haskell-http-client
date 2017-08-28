@@ -90,12 +90,12 @@ data MimeResponse res =
 dispatchReq
   :: (Produces req accept, MimeUnrender accept res, MimeType contentType)
   => NH.Manager -- ^ http-client Connection manager
-  -> accept -- ^ "accept" 'MimeType'
   -> SwaggerPetstoreConfig -- ^ config
   -> SwaggerPetstoreRequest req contentType res -- ^ request
+  -> accept -- ^ "accept" 'MimeType'
   -> IO (MimeResponse res) -- ^ response
-dispatchReq manager accept config request = do
-  httpResponse <- dispatchReqLbs manager accept config request
+dispatchReq manager config request accept = do
+  httpResponse <- dispatchReqLbs manager config request accept 
   let parsedResult =
         case mimeUnrender' accept (NH.responseBody httpResponse) of
           Left s -> Left (SwaggerPetstoreError s httpResponse)
@@ -106,36 +106,36 @@ dispatchReq manager accept config request = do
 dispatchReqRes
   :: (Produces req accept, MimeUnrender accept res, MimeType contentType)
   => NH.Manager -- ^ http-client Connection manager
-  -> accept -- ^ "accept" 'MimeType'
   -> SwaggerPetstoreConfig -- ^ config
   -> SwaggerPetstoreRequest req contentType res -- ^ request
+  -> accept -- ^ "accept" 'MimeType'
   -> IO (Either SwaggerPetstoreError res) -- ^ response
-dispatchReqRes manager accept config request = do
-    MimeResponse _ parsedResult <- dispatchReq manager accept config request
+dispatchReqRes manager config request accept = do
+    MimeResponse _ parsedResult <- dispatchReq manager config request accept 
     return parsedResult
 
 -- | like 'dispatchReq', but only returns the underlying http response
 dispatchReqLbs
   :: (Produces req accept, MimeType contentType)
   => NH.Manager -- ^ http-client Connection manager
-  -> accept -- ^ "accept" 'MimeType'
   -> SwaggerPetstoreConfig -- ^ config
   -> SwaggerPetstoreRequest req contentType res -- ^ request
+  -> accept -- ^ "accept" 'MimeType'
   -> IO (NH.Response BCL.ByteString) -- ^ response
-dispatchReqLbs manager accept config request = do
-  initReq <- _toInitRequest accept config request 
+dispatchReqLbs manager config request accept = do
+  initReq <- _toInitRequest config request accept 
   dispatchInitLbsUnsafe manager config initReq
 
 -- | like 'dispatchReqLbs', but does not validate the operation is a 'Producer' of the "accept" 'MimeType'.  (Useful if the server's response is undocumented)
 dispatchReqLbsUnsafe
   :: (MimeType accept, MimeType contentType)
   => NH.Manager -- ^ http-client Connection manager
-  -> accept -- ^ "accept" 'MimeType'
   -> SwaggerPetstoreConfig -- ^ config
   -> SwaggerPetstoreRequest req contentType res -- ^ request
+  -> accept -- ^ "accept" 'MimeType'
   -> IO (NH.Response BCL.ByteString) -- ^ response
-dispatchReqLbsUnsafe manager accept config request = do
-  initReq <- _toInitRequest accept config request 
+dispatchReqLbsUnsafe manager config request accept = do
+  initReq <- _toInitRequest config request accept
   dispatchInitLbsUnsafe manager config initReq
 
 -- | like 'dispatchReqLbsUnsafe', but does not add an "accept" header.
@@ -146,7 +146,7 @@ dispatchReqLbsUnsafeRaw
   -> SwaggerPetstoreRequest req contentType res -- ^ request
   -> IO (NH.Response BCL.ByteString) -- ^ response
 dispatchReqLbsUnsafeRaw manager config request = do
-  initReq <- _toInitRequest MimeNoContent config request 
+  initReq <- _toInitRequest config request MimeNoContent 
   dispatchInitLbsUnsafe manager config initReq
 
 -- | dispatch an InitRequest
@@ -168,11 +168,11 @@ newtype InitRequest req contentType res accept = InitRequest
 -- |  Build an http-client 'Request' record from the supplied config and request
 _toInitRequest
   :: (MimeType accept, MimeType contentType)
-  => accept -- ^ "accept" 'MimeType'
-  -> SwaggerPetstoreConfig -- ^ config
+  => SwaggerPetstoreConfig -- ^ config
   -> SwaggerPetstoreRequest req contentType res -- ^ request
+  -> accept -- ^ "accept" 'MimeType'
   -> IO (InitRequest req contentType res accept) -- ^ initialized request
-_toInitRequest accept config req0 = do
+_toInitRequest config req0 accept = do
   parsedReq <- NH.parseRequest $ BCL.unpack $ BCL.append (configHost config) (BCL.concat (urlPath req0))
   let req1 = _setAcceptHeader req0 accept & _setContentTypeHeader
       reqHeaders = ("User-Agent", WH.toHeader (configUserAgent config)) : paramsHeaders (params req1)
