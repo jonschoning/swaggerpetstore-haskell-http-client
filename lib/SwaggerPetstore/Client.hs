@@ -141,12 +141,15 @@ dispatchMime
   -> accept -- ^ "accept" 'MimeType'
   -> IO (MimeResult res) -- ^ response
 dispatchMime manager config request accept = do
-  httpResponse <- dispatchLbs manager config request accept 
-  let parsedResult =
-        case mimeUnrender' accept (NH.responseBody httpResponse) of
-          Left s -> Left (MimeError s httpResponse)
-          Right r -> Right r
-  return (MimeResult parsedResult httpResponse )
+  httpResponse <- dispatchLbs manager config request accept
+  parsedResult <-
+    runExceptionLoggingT "Client" config $
+    do case mimeUnrender' accept (NH.responseBody httpResponse) of
+         Left s -> do
+           logNST LG.LevelError "Client" (T.pack s)
+           pure (Left (MimeError s httpResponse))
+         Right r -> pure (Right r)
+  return (MimeResult parsedResult httpResponse)
 
 -- | like 'dispatchMime', but only returns the decoded http body
 dispatchMime'
