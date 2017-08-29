@@ -125,7 +125,7 @@ deletePet petId =
 data DeletePet  
 instance HasOptionalParam DeletePet ApiUnderscorekey where
   applyOptionalParam req (ApiUnderscorekey xs) =
-    req `_setHeader` toHeader ("api_key", xs)
+    req `setHeader` toHeader ("api_key", xs)
 -- | @application/xml@
 instance Produces DeletePet MimeXML
 -- | @application/json@
@@ -708,13 +708,13 @@ _mkRequest m u = SwaggerPetstoreRequest m u _mkParams
 _mkParams :: Params
 _mkParams = Params [] [] ParamBodyNone
 
-_setHeader :: SwaggerPetstoreRequest req contentType res -> [NH.Header] -> SwaggerPetstoreRequest req contentType res
-_setHeader req header = 
-    let _params = params (req `_removeHeader` P.fmap P.fst header)
+setHeader :: SwaggerPetstoreRequest req contentType res -> [NH.Header] -> SwaggerPetstoreRequest req contentType res
+setHeader req header = 
+    let _params = params (req `removeHeader` P.fmap P.fst header)
     in req { params = _params { paramsHeaders = header P.++ paramsHeaders _params } }
 
-_removeHeader :: SwaggerPetstoreRequest req contentType res -> [NH.HeaderName] -> SwaggerPetstoreRequest req contentType res
-_removeHeader req header = 
+removeHeader :: SwaggerPetstoreRequest req contentType res -> [NH.HeaderName] -> SwaggerPetstoreRequest req contentType res
+removeHeader req header = 
     let _params = params req
     in req { params = _params { paramsHeaders = [h | h <- paramsHeaders _params, cifst h `P.notElem` P.fmap CI.mk header] } }
   where cifst = CI.mk . P.fst
@@ -723,14 +723,14 @@ _removeHeader req header =
 _setContentTypeHeader :: forall req contentType res. MimeType contentType => SwaggerPetstoreRequest req contentType res -> SwaggerPetstoreRequest req contentType res
 _setContentTypeHeader req =
     case mimeType (P.Proxy :: P.Proxy contentType) of 
-        Just m -> req `_setHeader` [("content-type", BC.pack $ P.show m)]
-        Nothing -> req `_removeHeader` ["content-type"]
+        Just m -> req `setHeader` [("content-type", BC.pack $ P.show m)]
+        Nothing -> req `removeHeader` ["content-type"]
 
 _setAcceptHeader :: forall req contentType res accept. MimeType accept => SwaggerPetstoreRequest req contentType res -> accept -> SwaggerPetstoreRequest req contentType res
 _setAcceptHeader req accept =
     case mimeType' accept of 
-        Just m -> req `_setHeader` [("accept", BC.pack $ P.show m)]
-        Nothing -> req `_removeHeader` ["accept"]
+        Just m -> req `setHeader` [("accept", BC.pack $ P.show m)]
+        Nothing -> req `removeHeader` ["accept"]
 
 _setQuery :: SwaggerPetstoreRequest req contentType res -> [NH.QueryItem] -> SwaggerPetstoreRequest req contentType res
 _setQuery req query = 
