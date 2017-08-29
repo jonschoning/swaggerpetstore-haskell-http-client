@@ -64,7 +64,9 @@ import qualified Prelude as P
 -- * Operations
 
 
--- ** addPet
+-- ** Pet
+
+-- *** addPet
 
 -- | @POST \/pet@
 -- 
@@ -83,7 +85,7 @@ addPet _ body =
   _mkRequest "POST" ["/pet"]
     `setBodyParam` body
 
-{-# WARNING addPet "has Produces, but no response datatype schema." #-}
+{-# WARNING addPet "has Produces instances, but no response schema." #-}
 
 data AddPet 
 
@@ -101,7 +103,7 @@ instance Produces AddPet MimeXML
 instance Produces AddPet MimeJSON
 
 
--- ** deletePet
+-- *** deletePet
 
 -- | @DELETE \/pet\/{petId}@
 -- 
@@ -118,7 +120,7 @@ deletePet petId =
   _mkRequest "DELETE" ["/pet/",toPath petId]
     
 
-{-# WARNING deletePet "has Produces, but no response datatype schema." #-}
+{-# WARNING deletePet "has Produces instances, but no response schema." #-}
 
 data DeletePet  
 instance HasOptionalParam DeletePet ApiUnderscorekey where
@@ -130,7 +132,7 @@ instance Produces DeletePet MimeXML
 instance Produces DeletePet MimeJSON
 
 
--- ** findPetsByStatus
+-- *** findPetsByStatus
 
 -- | @GET \/pet\/findByStatus@
 -- 
@@ -154,7 +156,7 @@ instance Produces FindPetsByStatus MimeXML
 instance Produces FindPetsByStatus MimeJSON
 
 
--- ** findPetsByTags
+-- *** findPetsByTags
 
 -- | @GET \/pet\/findByTags@
 -- 
@@ -180,7 +182,7 @@ instance Produces FindPetsByTags MimeXML
 instance Produces FindPetsByTags MimeJSON
 
 
--- ** getPetById
+-- *** getPetById
 
 -- | @GET \/pet\/{petId}@
 -- 
@@ -204,7 +206,7 @@ instance Produces GetPetById MimeXML
 instance Produces GetPetById MimeJSON
 
 
--- ** updatePet
+-- *** updatePet
 
 -- | @PUT \/pet@
 -- 
@@ -223,7 +225,7 @@ updatePet _ body =
   _mkRequest "PUT" ["/pet"]
     `setBodyParam` body
 
-{-# WARNING updatePet "has Produces, but no response datatype schema." #-}
+{-# WARNING updatePet "has Produces instances, but no response schema." #-}
 
 data UpdatePet 
 
@@ -241,7 +243,7 @@ instance Produces UpdatePet MimeXML
 instance Produces UpdatePet MimeJSON
 
 
--- ** updatePetWithForm
+-- *** updatePetWithForm
 
 -- | @POST \/pet\/{petId}@
 -- 
@@ -260,7 +262,7 @@ updatePetWithForm _ petId =
   _mkRequest "POST" ["/pet/",toPath petId]
     
 
-{-# WARNING updatePetWithForm "has Produces, but no response datatype schema." #-}
+{-# WARNING updatePetWithForm "has Produces instances, but no response schema." #-}
 
 data UpdatePetWithForm  
 
@@ -283,7 +285,7 @@ instance Produces UpdatePetWithForm MimeXML
 instance Produces UpdatePetWithForm MimeJSON
 
 
--- ** uploadFile
+-- *** uploadFile
 
 -- | @POST \/pet\/{petId}\/uploadImage@
 -- 
@@ -321,7 +323,9 @@ instance Consumes UploadFile MimeMultipartFormData
 instance Produces UploadFile MimeJSON
 
 
--- ** deleteOrder
+-- ** Store
+
+-- *** deleteOrder
 
 -- | @DELETE \/store\/order\/{orderId}@
 -- 
@@ -336,7 +340,7 @@ deleteOrder orderId =
   _mkRequest "DELETE" ["/store/order/",toPath orderId]
     
 
-{-# WARNING deleteOrder "has Produces, but no response datatype schema." #-}
+{-# WARNING deleteOrder "has Produces instances, but no response schema." #-}
 
 data DeleteOrder  
 -- | @application/xml@
@@ -345,7 +349,7 @@ instance Produces DeleteOrder MimeXML
 instance Produces DeleteOrder MimeJSON
 
 
--- ** getInventory
+-- *** getInventory
 
 -- | @GET \/store\/inventory@
 -- 
@@ -365,7 +369,7 @@ data GetInventory
 instance Produces GetInventory MimeJSON
 
 
--- ** getOrderById
+-- *** getOrderById
 
 -- | @GET \/store\/order\/{orderId}@
 -- 
@@ -387,7 +391,7 @@ instance Produces GetOrderById MimeXML
 instance Produces GetOrderById MimeJSON
 
 
--- ** placeOrder
+-- *** placeOrder
 
 -- | @POST \/store\/order@
 -- 
@@ -414,7 +418,9 @@ instance Produces PlaceOrder MimeXML
 instance Produces PlaceOrder MimeJSON
 
 
--- ** createUser
+-- ** User
+
+-- *** createUser
 
 -- | @POST \/user@
 -- 
@@ -431,7 +437,7 @@ createUser _ body =
   _mkRequest "POST" ["/user"]
     `setBodyParam` body
 
-{-# WARNING createUser "has Produces, but no response datatype schema." #-}
+{-# WARNING createUser "has Produces instances, but no response schema." #-}
 
 data CreateUser 
 
@@ -443,7 +449,7 @@ instance Produces CreateUser MimeXML
 instance Produces CreateUser MimeJSON
 
 
--- ** createUsersWithArrayInput
+-- *** createUsersWithArrayInput
 
 -- | @POST \/user\/createWithArray@
 -- 
@@ -460,7 +466,7 @@ createUsersWithArrayInput _ body =
   _mkRequest "POST" ["/user/createWithArray"]
     `setBodyParam` body
 
-{-# WARNING createUsersWithArrayInput "has Produces, but no response datatype schema." #-}
+{-# WARNING createUsersWithArrayInput "has Produces instances, but no response schema." #-}
 
 data CreateUsersWithArrayInput 
 
@@ -472,7 +478,7 @@ instance Produces CreateUsersWithArrayInput MimeXML
 instance Produces CreateUsersWithArrayInput MimeJSON
 
 
--- ** createUsersWithListInput
+-- *** createUsersWithListInput
 
 -- | @POST \/user\/createWithList@
 -- 
@@ -489,7 +495,7 @@ createUsersWithListInput _ body =
   _mkRequest "POST" ["/user/createWithList"]
     `setBodyParam` body
 
-{-# WARNING createUsersWithListInput "has Produces, but no response datatype schema." #-}
+{-# WARNING createUsersWithListInput "has Produces instances, but no response schema." #-}
 
 data CreateUsersWithListInput 
 
@@ -501,7 +507,7 @@ instance Produces CreateUsersWithListInput MimeXML
 instance Produces CreateUsersWithListInput MimeJSON
 
 
--- ** deleteUser
+-- *** deleteUser
 
 -- | @DELETE \/user\/{username}@
 -- 
@@ -516,7 +522,7 @@ deleteUser username =
   _mkRequest "DELETE" ["/user/",toPath username]
     
 
-{-# WARNING deleteUser "has Produces, but no response datatype schema." #-}
+{-# WARNING deleteUser "has Produces instances, but no response schema." #-}
 
 data DeleteUser  
 -- | @application/xml@
@@ -525,7 +531,7 @@ instance Produces DeleteUser MimeXML
 instance Produces DeleteUser MimeJSON
 
 
--- ** getUserByName
+-- *** getUserByName
 
 -- | @GET \/user\/{username}@
 -- 
@@ -547,7 +553,7 @@ instance Produces GetUserByName MimeXML
 instance Produces GetUserByName MimeJSON
 
 
--- ** loginUser
+-- *** loginUser
 
 -- | @GET \/user\/login@
 -- 
@@ -571,7 +577,7 @@ instance Produces LoginUser MimeXML
 instance Produces LoginUser MimeJSON
 
 
--- ** logoutUser
+-- *** logoutUser
 
 -- | @GET \/user\/logout@
 -- 
@@ -584,7 +590,7 @@ logoutUser
 logoutUser =
   _mkRequest "GET" ["/user/logout"]
 
-{-# WARNING logoutUser "has Produces, but no response datatype schema." #-}
+{-# WARNING logoutUser "has Produces instances, but no response schema." #-}
 
 data LogoutUser  
 -- | @application/xml@
@@ -593,7 +599,7 @@ instance Produces LogoutUser MimeXML
 instance Produces LogoutUser MimeJSON
 
 
--- ** updateUser
+-- *** updateUser
 
 -- | @PUT \/user\/{username}@
 -- 
@@ -612,7 +618,7 @@ updateUser _ username body =
     
     `setBodyParam` body
 
-{-# WARNING updateUser "has Produces, but no response datatype schema." #-}
+{-# WARNING updateUser "has Produces instances, but no response schema." #-}
 
 data UpdateUser 
 
