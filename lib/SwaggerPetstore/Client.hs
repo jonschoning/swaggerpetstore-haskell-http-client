@@ -32,9 +32,11 @@ import qualified Control.Monad.Logger as LG
 import qualified Data.Time as TI
 import qualified Data.Map as Map
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 import qualified Text.Printf as T
 
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Char8 as BC
 import qualified Data.ByteString.Lazy.Char8 as BCL
 import qualified Data.ByteString.Builder as BB
@@ -48,13 +50,15 @@ import qualified Network.HTTP.Types.URI as NH
 import qualified Control.Exception.Safe as E
 -- * Config
 
+-- | 
 data SwaggerPetstoreConfig = SwaggerPetstoreConfig
-  { configHost  :: BCL.ByteString -- & ^ host supplied in the Request
+  { configHost  :: BCL.ByteString -- ^ host supplied in the Request
   , configUserAgent :: Text -- ^ user-agent supplied in the Request
-  , configExecLoggingT :: ExecLoggingT 
+  , configExecLoggingT :: ExecLoggingT -- ^ Run a block using a MonadLogger instance
   , configLoggingFilter :: LG.LogSource -> LG.LogLevel -> Bool -- ^ Only log messages passing the given predicate function.
   }
 
+-- | display the config
 instance Show SwaggerPetstoreConfig where
   show c =
     T.printf
@@ -62,8 +66,21 @@ instance Show SwaggerPetstoreConfig where
       (show (configHost c))
       (show (configUserAgent c))
 
-mkConfig :: SwaggerPetstoreConfig
-mkConfig =
+-- | constructs a default SwaggerPetstoreConfig
+--
+-- configHost:
+--
+-- @http://petstore.swagger.io/v2@
+--
+-- configUserAgent:
+--
+-- @"swagger-haskell-http-client/1.0.0"@
+--
+-- configExecLoggingT: 'runNullLoggingT'
+--
+-- configLoggingFilter: 'infoLevelFilter'
+newConfig :: SwaggerPetstoreConfig
+newConfig =
   SwaggerPetstoreConfig
   { configHost = "http://petstore.swagger.io/v2"
   , configUserAgent = "swagger-haskell-http-client/1.0.0"
@@ -71,99 +88,105 @@ mkConfig =
   , configLoggingFilter = infoLevelFilter
   }
 
+-- | updates the config to use a MonadLogger instance which prints to stdout.
 withStdoutLogging :: SwaggerPetstoreConfig -> SwaggerPetstoreConfig
 withStdoutLogging p = p { configExecLoggingT = LG.runStdoutLoggingT}
 
+-- | updates the config to use a MonadLogger instance which prints to stderr.
 withStderrLogging :: SwaggerPetstoreConfig -> SwaggerPetstoreConfig
 withStderrLogging p = p { configExecLoggingT = LG.runStderrLoggingT}
 
+-- | updates the config to disable logging
 withNoLogging :: SwaggerPetstoreConfig -> SwaggerPetstoreConfig
 withNoLogging p = p { configExecLoggingT = runNullLoggingT}
 
 -- * Dispatch
 
-data MimeResponse res =
-  MimeResponse { mimeResponseHttp :: NH.Response BCL.ByteString
-               , mimeResponseResult :: Either SwaggerPetstoreError res
-               }
-  deriving (Show)
+-- ** Lbs
 
--- | returns both the underlying http response and the parsed result ('MimeResponse')
-dispatchReq
-  :: (Produces req accept, MimeUnrender accept res, MimeType contentType)
-  => NH.Manager -- ^ http-client Connection manager
-  -> SwaggerPetstoreConfig -- ^ config
-  -> SwaggerPetstoreRequest req contentType res -- ^ request
-  -> accept -- ^ "accept" 'MimeType'
-  -> IO (MimeResponse res) -- ^ response
-dispatchReq manager config request accept = do
-  httpResponse <- dispatchReqLbs manager config request accept 
-  let parsedResult =
-        case mimeUnrender' accept (NH.responseBody httpResponse) of
-          Left s -> Left (SwaggerPetstoreError s httpResponse)
-          Right r -> Right r
-  return (MimeResponse httpResponse parsedResult)
-
--- | like 'dispatchReq', but only returns the parsed result
-dispatchReqRes
-  :: (Produces req accept, MimeUnrender accept res, MimeType contentType)
-  => NH.Manager -- ^ http-client Connection manager
-  -> SwaggerPetstoreConfig -- ^ config
-  -> SwaggerPetstoreRequest req contentType res -- ^ request
-  -> accept -- ^ "accept" 'MimeType'
-  -> IO (Either SwaggerPetstoreError res) -- ^ response
-dispatchReqRes manager config request accept = do
-    MimeResponse _ parsedResult <- dispatchReq manager config request accept 
-    return parsedResult
-
--- | like 'dispatchReq', but only returns the underlying http response
-dispatchReqLbs
+-- | send a request returning the raw http response
+dispatchLbs
   :: (Produces req accept, MimeType contentType)
   => NH.Manager -- ^ http-client Connection manager
   -> SwaggerPetstoreConfig -- ^ config
   -> SwaggerPetstoreRequest req contentType res -- ^ request
   -> accept -- ^ "accept" 'MimeType'
   -> IO (NH.Response BCL.ByteString) -- ^ response
-dispatchReqLbs manager config request accept = do
+dispatchLbs manager config request accept = do
   initReq <- _toInitRequest config request accept 
-  dispatchInitLbsUnsafe manager config initReq
+  dispatchInitUnsafe manager config initReq
+
+-- ** Mime
+
+-- | pair of decoded http body and http response
+data MimeResult res =
+  MimeResult { mimeResult :: Either MimeError res -- ^ decoded http body
+             , mimeResultResponse :: NH.Response BCL.ByteString -- ^ http response 
+             }
+  deriving (Show)
+
+-- | pair of unrender/parser error and http response
+data MimeError =
+  MimeError {
+    mimeError :: String -- ^ unrender/parser error
+  , mimeErrorResponse :: NH.Response BCL.ByteString -- ^ http response 
+  } deriving (Eq, Show)
+
+-- | send a request returning the 'MimeResult'
+dispatchMime
+  :: (Produces req accept, MimeUnrender accept res, MimeType contentType)
+  => NH.Manager -- ^ http-client Connection manager
+  -> SwaggerPetstoreConfig -- ^ config
+  -> SwaggerPetstoreRequest req contentType res -- ^ request
+  -> accept -- ^ "accept" 'MimeType'
+  -> IO (MimeResult res) -- ^ response
+dispatchMime manager config request accept = do
+  httpResponse <- dispatchLbs manager config request accept 
+  let parsedResult =
+        case mimeUnrender' accept (NH.responseBody httpResponse) of
+          Left s -> Left (MimeError s httpResponse)
+          Right r -> Right r
+  return (MimeResult parsedResult httpResponse )
+
+-- | like 'dispatchMime', but only returns the decoded http body
+dispatchMime'
+  :: (Produces req accept, MimeUnrender accept res, MimeType contentType)
+  => NH.Manager -- ^ http-client Connection manager
+  -> SwaggerPetstoreConfig -- ^ config
+  -> SwaggerPetstoreRequest req contentType res -- ^ request
+  -> accept -- ^ "accept" 'MimeType'
+  -> IO (Either MimeError res) -- ^ response
+dispatchMime' manager config request accept = do
+    MimeResult parsedResult _ <- dispatchMime manager config request accept 
+    return parsedResult
+
+-- ** Unsafe
 
 -- | like 'dispatchReqLbs', but does not validate the operation is a 'Producer' of the "accept" 'MimeType'.  (Useful if the server's response is undocumented)
-dispatchReqLbsUnsafe
+dispatchLbsUnsafe
   :: (MimeType accept, MimeType contentType)
   => NH.Manager -- ^ http-client Connection manager
   -> SwaggerPetstoreConfig -- ^ config
   -> SwaggerPetstoreRequest req contentType res -- ^ request
   -> accept -- ^ "accept" 'MimeType'
   -> IO (NH.Response BCL.ByteString) -- ^ response
-dispatchReqLbsUnsafe manager config request accept = do
+dispatchLbsUnsafe manager config request accept = do
   initReq <- _toInitRequest config request accept
-  dispatchInitLbsUnsafe manager config initReq
-
--- | like 'dispatchReqLbsUnsafe', but does not add an "accept" header.
-dispatchReqLbsUnsafeRaw
-  :: MimeType contentType
-  => NH.Manager -- ^ http-client Connection manager
-  -> SwaggerPetstoreConfig -- ^ config
-  -> SwaggerPetstoreRequest req contentType res -- ^ request
-  -> IO (NH.Response BCL.ByteString) -- ^ response
-dispatchReqLbsUnsafeRaw manager config request = do
-  initReq <- _toInitRequest config request MimeNoContent 
-  dispatchInitLbsUnsafe manager config initReq
+  dispatchInitUnsafe manager config initReq
 
 -- | dispatch an InitRequest
-dispatchInitLbsUnsafe
+dispatchInitUnsafe
   :: NH.Manager -- ^ http-client Connection manager
   -> SwaggerPetstoreConfig -- ^ config
   -> InitRequest req contentType res accept -- ^ init request
   -> IO (NH.Response BCL.ByteString) -- ^ response
-dispatchInitLbsUnsafe manager config (InitRequest req) = do
+dispatchInitUnsafe manager config (InitRequest req) = do
   runExceptionLoggingT logSrc config $
     do logNST LG.LevelInfo logSrc requestLogMsg
-       logNST LG.LevelDebug logSrc (toText req)
+       logNST LG.LevelDebug logSrc requestDbgLogMsg
        res <- P.liftIO $ NH.httpLbs req manager
        logNST LG.LevelInfo logSrc (responseLogMsg res)
-       logNST LG.LevelDebug logSrc (toText res)
+       logNST LG.LevelDebug logSrc ((T.pack . show) res)
        return res
   where
     logSrc = "Client"
@@ -171,11 +194,16 @@ dispatchInitLbsUnsafe manager config (InitRequest req) = do
       T.pack $
       BC.unpack $
       NH.method req <> " " <> NH.host req <> NH.path req <> NH.queryString req
-    responseStatusCode = toText . NH.statusCode . NH.responseStatus
     requestLogMsg = "REQ:" <> endpoint
+    requestDbgLogMsg =
+      "Headers=" <> (T.pack . show) (NH.requestHeaders req) <> " Body=" <>
+      (case NH.requestBody req of
+         NH.RequestBodyLBS xs -> T.decodeUtf8 (BL.toStrict xs)
+         _ -> "<RequestBody>")
+    responseStatusCode = (T.pack . show) . NH.statusCode . NH.responseStatus
     responseLogMsg res =
       "RES:statusCode=" <> responseStatusCode res <> " (" <> endpoint <> ")"
-  
+
 -- * InitRequest
 
 -- | wraps an http-client 'Request' with request/response type parameters
@@ -208,44 +236,41 @@ _toInitRequest config req0 accept = do
 
   pure (InitRequest outReq)
 
--- | convenience method for modifying the underlying Request
+-- | modify the underlying Request
 modifyInitRequest :: InitRequest req contentType res accept -> (NH.Request -> NH.Request) -> InitRequest req contentType res accept 
 modifyInitRequest (InitRequest req) f = InitRequest (f req)
 
--- | convenience method for modifying the underlying Request (monadic)
+-- | modify the underlying Request (monadic)
 modifyInitRequestM :: Monad m => InitRequest req contentType res accept -> (NH.Request -> m NH.Request) -> m (InitRequest req contentType res accept)
 modifyInitRequestM (InitRequest req) f = fmap InitRequest (f req)
 
--- * Error
-
-data SwaggerPetstoreError =
-  SwaggerPetstoreError {
-    parseError   :: String
-  , reponseError :: NH.Response BCL.ByteString
-  } deriving (Eq, Show)
-
 -- * Logging
 
--- | runs the logger
+-- | A block using a MonadLogger instance
 type ExecLoggingT = forall m. P.MonadIO m =>
                               forall a. LG.LoggingT m a -> m a
 
 -- ** Null Logger
 
+-- | a logger which disables logging
 nullLogger :: LG.Loc -> LG.LogSource -> LG.LogLevel -> LG.LogStr -> IO ()
 nullLogger _ _ _ _ = return ()
 
+-- | run the monad transformer that disables logging
 runNullLoggingT :: LG.LoggingT m a -> m a
 runNullLoggingT = (`LG.runLoggingT` nullLogger)
 
 -- ** Logging Filters
 
+-- | a log filter that uses 'LevelError' as the minimum logging level
 errorLevelFilter :: LG.LogSource -> LG.LogLevel -> Bool
 errorLevelFilter = minLevelFilter LG.LevelError
 
+-- | a log filter that uses 'LevelInfo' as the minimum logging level
 infoLevelFilter :: LG.LogSource -> LG.LogLevel -> Bool
 infoLevelFilter = minLevelFilter LG.LevelInfo
 
+-- | a log filter that uses 'LevelDebug' as the minimum logging level
 debugLevelFilter :: LG.LogSource -> LG.LogLevel -> Bool
 debugLevelFilter = minLevelFilter LG.LevelDebug
 
@@ -254,6 +279,7 @@ minLevelFilter l _ l' = l' >= l
 
 -- ** Logging 
 
+-- | Log a message using the current time
 logNST :: (P.MonadIO m, LG.MonadLogger m) => LG.LogLevel -> Text -> Text -> m ()
 logNST level src msg = do
   now <- P.liftIO (formatTimeLog <$> TI.getCurrentTime)
@@ -263,25 +289,23 @@ logNST level src msg = do
   formatTimeLog =
     T.pack . TI.formatTime TI.defaultTimeLocale "%Y-%m-%dT%H:%M:%S%Z"
 
+-- | re-throws exceptions after logging them
 logExceptions
   :: (LG.MonadLogger m, E.MonadCatch m, P.MonadIO m)
   => Text -> m a -> m a
 logExceptions src =
   E.handle
     (\(e :: E.SomeException) -> do
-       logNST LG.LevelError src (toText e)
+       logNST LG.LevelError src ((T.pack . show) e)
        E.throw e)
 
+-- | Run a block using the configured MonadLogger instance
 runLoggingT :: SwaggerPetstoreConfig -> ExecLoggingT
 runLoggingT config =
   configExecLoggingT config . LG.filterLogger (configLoggingFilter config)
 
+-- | Run a block using the configured MonadLogger instance (logs exceptions)
 runExceptionLoggingT
   :: (E.MonadCatch m, P.MonadIO m)
   => T.Text -> SwaggerPetstoreConfig -> LG.LoggingT m a -> m a
 runExceptionLoggingT logSrc config = runLoggingT config . logExceptions logSrc
-
-toText
-  :: Show a
-  => a -> Text
-toText = T.pack . show
