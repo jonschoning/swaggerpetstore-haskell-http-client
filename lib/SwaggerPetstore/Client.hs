@@ -29,6 +29,7 @@ import Control.Monad.Catch (MonadThrow)
 
 import qualified Control.Monad.Logger as LG
 
+import qualified Data.Time as TI
 import qualified Data.Map as Map
 import qualified Data.Text as T
 import qualified Text.Printf as T
@@ -44,13 +45,14 @@ import qualified Network.HTTP.Types.Method as NH
 import qualified Network.HTTP.Types as NH
 import qualified Network.HTTP.Types.URI as NH
 
+import qualified Control.Exception.Safe as E
 -- * Config
 
 data SwaggerPetstoreConfig = SwaggerPetstoreConfig
-  { configHost  :: BCL.ByteString
-  , configUserAgent :: Text
-  , configExecLoggingT :: ExecLoggingT
-  , configFilterLoggingT :: LG.LogSource -> LG.LogLevel -> Bool
+  { configHost  :: BCL.ByteString -- & ^ host supplied in the Request
+  , configUserAgent :: Text -- ^ user-agent supplied in the Request
+  , configExecLoggingT :: ExecLoggingT 
+  , configLoggingFilter :: LG.LogSource -> LG.LogLevel -> Bool -- ^ Only log messages passing the given predicate function.
   }
 
 instance Show SwaggerPetstoreConfig where
@@ -66,7 +68,7 @@ mkConfig =
   { configHost = "http://petstore.swagger.io/v2"
   , configUserAgent = "swagger-haskell-http-client/1.0.0"
   , configExecLoggingT = runNullLoggingT
-  , configFilterLoggingT = infoLevelFilter
+  , configLoggingFilter = infoLevelFilter
   }
 
 withStdoutLogging :: SwaggerPetstoreConfig -> SwaggerPetstoreConfig
@@ -155,8 +157,24 @@ dispatchInitLbsUnsafe
   -> SwaggerPetstoreConfig -- ^ config
   -> InitRequest req contentType res accept -- ^ init request
   -> IO (NH.Response BCL.ByteString) -- ^ response
-dispatchInitLbsUnsafe manager _ (InitRequest req) = do
-  NH.httpLbs req manager
+dispatchInitLbsUnsafe manager config (InitRequest req) = do
+  runExceptionLoggingT logSrc config $
+    do logNST LG.LevelInfo logSrc requestLogMsg
+       logNST LG.LevelDebug logSrc (toText req)
+       res <- P.liftIO $ NH.httpLbs req manager
+       logNST LG.LevelInfo logSrc (responseLogMsg res)
+       logNST LG.LevelDebug logSrc (toText res)
+       return res
+  where
+    logSrc = "Client"
+    endpoint =
+      T.pack $
+      BC.unpack $
+      NH.method req <> " " <> NH.host req <> NH.path req <> NH.queryString req
+    responseStatusCode = toText . NH.statusCode . NH.responseStatus
+    requestLogMsg = "REQ:" <> endpoint
+    responseLogMsg res =
+      "RES:statusCode=" <> responseStatusCode res <> " (" <> endpoint <> ")"
   
 -- * InitRequest
 
@@ -233,3 +251,37 @@ debugLevelFilter = minLevelFilter LG.LevelDebug
 
 minLevelFilter :: LG.LogLevel -> LG.LogSource -> LG.LogLevel -> Bool
 minLevelFilter l _ l' = l' >= l
+
+-- ** Logging 
+
+logNST :: (P.MonadIO m, LG.MonadLogger m) => LG.LogLevel -> Text -> Text -> m ()
+logNST level src msg = do
+  now <- P.liftIO (formatTimeLog <$> TI.getCurrentTime)
+  LG.logOtherNS sourceLog level (now <> " " <> msg)
+ where
+  sourceLog = "SwaggerPetstore/" <> src
+  formatTimeLog =
+    T.pack . TI.formatTime TI.defaultTimeLocale "%Y-%m-%dT%H:%M:%S%Z"
+
+logExceptions
+  :: (LG.MonadLogger m, E.MonadCatch m, P.MonadIO m)
+  => Text -> m a -> m a
+logExceptions src =
+  E.handle
+    (\(e :: E.SomeException) -> do
+       logNST LG.LevelError src (toText e)
+       E.throw e)
+
+runLoggingT :: SwaggerPetstoreConfig -> ExecLoggingT
+runLoggingT config =
+  configExecLoggingT config . LG.filterLogger (configLoggingFilter config)
+
+runExceptionLoggingT
+  :: (E.MonadCatch m, P.MonadIO m)
+  => T.Text -> SwaggerPetstoreConfig -> LG.LoggingT m a -> m a
+runExceptionLoggingT logSrc config = runLoggingT config . logExceptions logSrc
+
+toText
+  :: Show a
+  => a -> Text
+toText = T.pack . show

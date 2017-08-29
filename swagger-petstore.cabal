@@ -53,6 +53,7 @@ library
     , random >=1.1
     , exceptions >= 0.4
     , monad-logger >=0.3 && <0.4
+    , safe-exceptions <0.2
     , case-insensitive
   exposed-modules:
       SwaggerPetstore
