@@ -8,3 +8,11 @@ Installation follows the standard approach to installing Stack-based projects.
 
 1. Install the [Haskell `stack` tool](http://docs.haskellstack.org/en/stable/README).
 2. Run `stack install` to install this package.
+
+## Not Supported
+
+* Auth Methods (https://swagger.io/docs/specification/2-0/authentication/)
+
+* Default Parameter Values
+
+* Enum Parameters
