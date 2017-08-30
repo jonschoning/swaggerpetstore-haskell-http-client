@@ -16,7 +16,10 @@ import Data.Monoid ((<>))
 
 main :: IO ()
 main = do
+
   mgr <- NH.newManager NH.defaultManagerSettings
+
+  -- print log messages to sdtout
   let config = S.withStdoutLogging S.newConfig -- { S.configLoggingFilter = S.debugLevelFilter }
 
   putStrLn "******** CONFIG ********"
@@ -40,18 +43,50 @@ main = do
 
 runPet :: NH.Manager -> S.SwaggerPetstoreConfig -> IO ()
 runPet mgr config = do
-  -- addPet
+
+  -- create the request for addPet, encoded with content-type application/json
   let addPetRequest = S.addPet S.MimeJSON (S.mkPet "name" ["url1", "url2"])
+
+  -- send the rquest with accept header application/json
+  -- dispatchLbs simply returns the raw Network.HTTP.Client.Response ByteString
   addPetResponse <- S.dispatchLbs mgr config addPetRequest S.MimeJSON
 
-  -- decode response manually, since swagger file has no response schema for 'addPet'
+  -- the Consumes & Produces typeclasses control which 'content-type'
+  -- and 'accept' encodings are allowed for each operation
+  -- -- No instance for (S.Produces S.AddPet S.MimePlainText)
+  -- addPetResponse <- S.dispatchLbs mgr config addPetRequest S.MimePlainText
+
+  -- inspect the AddPet type to see typeclasses indicating wihch
+  -- content-type and accept types (mimeTypes) are valid
+
+  -- :i S.AddPet
+    -- data S.AddPet 	-- Defined in ‘SwaggerPetstore.API’
+    -- instance S.Produces S.AddPet S.MimeXML
+    --   -- Defined in ‘SwaggerPetstore.API’
+    -- instance S.Produces S.AddPet S.MimeJSON
+    --   -- Defined in ‘SwaggerPetstore.API’
+    -- instance S.Consumes S.AddPet S.MimeXML
+    --   -- Defined in ‘SwaggerPetstore.API’
+    -- instance S.Consumes S.AddPet S.MimeJSON
+    --   -- Defined in ‘SwaggerPetstore.API’
+    -- instance S.HasBodyParam S.AddPet S.Pet
+    --   -- Defined in ‘SwaggerPetstore.API’
+
+  
+  -- since this swagger definition has no response schema defined for
+  -- the 'addPet' response, we decode the response bytestring manually
   case A.eitherDecode (NH.responseBody addPetResponse) of
     Right pet@S.Pet { S.petId = Just pid } -> do
 
-        -- getPetByid
+        -- create the request for getPetById
         let getPetByIdRequest = S.getPetById pid
+
+        -- dispatchMime returns MimeResult, which includes the
+        -- expected decoded model object 'Pet', or a parse failure
         getPetByIdRequestResult <- S.dispatchMime mgr config getPetByIdRequest S.MimeJSON
-        mapM_ (\r -> putStrLn $ "getPetById: found pet: " <> show r) getPetByIdRequestResult 
+        case S.mimeResult getPetByIdRequestResult of
+          Left (S.MimeError _ _) -> return () -- parse error, already displayed in the log
+          Right r -> putStrLn $ "getPetById: found pet: " <> show r  -- display 'Pet' model object, r 
 
         -- findPetsByStatus
         let findPetsByStatusRequest = S.findPetsByStatus ["available","pending","sold"]
@@ -70,15 +105,20 @@ runPet mgr config = do
                 }
         _ <- S.dispatchLbs mgr config updatePetRequest S.MimeXML
 
-        -- updatePetWithForm
+        -- requred parameters are included as function arguments, optional parameters are included with applyOptionalParam
+        -- inspect the UpdatePetWithForm type to see typeclasses indicating optional paramteters (:i S.UpdatePetWithForm)
+        -- instance S.HasOptionalParam S.UpdatePetWithForm S.Name
+        --   -- Defined in ‘SwaggerPetstore.API’
+        -- instance S.HasOptionalParam S.UpdatePetWithForm S.Status
+        --   -- Defined in ‘SwaggerPetstore.API’
         let updatePetWithFormRequest = S.updatePetWithForm S.MimeFormUrlEncoded pid
                 `S.applyOptionalParam` S.Name "petName"
                 `S.applyOptionalParam` S.Status "pending"
         _ <- S.dispatchLbs mgr config updatePetWithFormRequest S.MimeJSON
 
-        -- uploadFile
+        -- multipart/form-data file uploads are just a different content-type
         let uploadFileRequest = S.uploadFile S.MimeMultipartFormData pid
-                `S.applyOptionalParam` S.File "package.yaml"
+                `S.applyOptionalParam` S.File "package.yaml" -- the file contents of the path are read when dispatched
                 `S.applyOptionalParam` S.AdditionalMetadata "a package.yaml file"
         uploadFileRequestResult <- S.dispatchMime mgr config uploadFileRequest S.MimeJSON
         mapM_ (\r -> putStrLn $ "uploadFile: " <> show r) uploadFileRequestResult 
@@ -105,9 +145,9 @@ instance S.Consumes S.PlaceOrder S.MimeJSON
 runStore :: NH.Manager -> S.SwaggerPetstoreConfig -> IO ()
 runStore mgr config = do
 
-  -- getInventory
+  -- we can set arbitrary headers with setHeader
   let getInventoryRequest = S.getInventory
-        `S.setHeader` [("api_key","special-key")] -- set "api_key" auth method manually
+        `S.setHeader` [("api_key","special-key")] 
   getInventoryRequestRequestResult <- S.dispatchMime mgr config getInventoryRequest S.MimeJSON
   mapM_ (\r -> putStrLn $ "getInventoryRequest: found " <> (show . length) r <> " results") getInventoryRequestRequestResult
 
@@ -134,11 +174,15 @@ runStore mgr config = do
 
 -- * USER
 
+-- this swagger definition doesn't declare what content-type the
+-- server actually expects for these operations, so delcare it here
 instance S.Consumes S.CreateUser S.MimeJSON
 instance S.Consumes S.UpdateUser S.MimeJSON
-
 instance S.Consumes S.CreateUsersWithArrayInput S.MimeJSON
 instance S.Consumes S.CreateUsersWithListInput S.MimeJSON
+
+-- similarly we declare these operations are allowed to omit the
+-- accept header despite what the swagger definition says
 instance S.Produces S.CreateUsersWithArrayInput S.MimeNoContent
 instance S.Produces S.CreateUsersWithListInput S.MimeNoContent
 
@@ -151,7 +195,7 @@ runUser mgr config = do
   let createUserRequest = S.createUser S.MimeJSON user
   _ <- S.dispatchLbs mgr config createUserRequest S.MimeJSON
 
-  -- createUsersWithArrayInput
+  -- can use traversals or lenses (model record names are appended with T or L) to view or modify records
   let users = take 8 $ drop 1 $ iterate (L.over S.userUsernameT (<> "*") . L.over S.userIdT (+1)) user
   let createUsersWithArrayInputRequest = S.createUsersWithArrayInput S.MimeJSON users
   _ <- S.dispatchLbs mgr config createUsersWithArrayInputRequest S.MimeNoContent
