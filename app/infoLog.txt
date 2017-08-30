@@ -1,0 +1,55 @@
+******** CONFIG ********
+{ configHost = "http://petstore.swagger.io/v2", configUserAgent = "swagger-haskell-http-client/1.0.0", ..}
+******** Pet operations ********
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:57UTC REQ:POST petstore.swagger.io/v2/pet
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:57UTC RES:statusCode=200 (POST petstore.swagger.io/v2/pet)
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:57UTC REQ:GET petstore.swagger.io/v2/pet/9143431158144664371
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:58UTC RES:statusCode=200 (GET petstore.swagger.io/v2/pet/9143431158144664371)
+getPetById: found pet: Pet {petId = Just 9143431158144664371, petCategory = Nothing, petName = "name", petPhotoUrls = ["url1","url2"], petTags = Just [], petStatus = Nothing}
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:58UTC REQ:GET petstore.swagger.io/v2/pet/findByStatus?status=available&status=pending&status=sold
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:58UTC RES:statusCode=200 (GET petstore.swagger.io/v2/pet/findByStatus?status=available&status=pending&status=sold)
+[Error#SwaggerPetstore/Client] 2017-08-30T04:36:58UTC Error in $[5]: key "photoUrls" not present
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:58UTC REQ:GET petstore.swagger.io/v2/pet/findByTags?tags=name&tags=tag1
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:58UTC RES:statusCode=200 (GET petstore.swagger.io/v2/pet/findByTags?tags=name&tags=tag1)
+findPetsByTags: found 36 pets
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:58UTC REQ:PUT petstore.swagger.io/v2/pet
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:58UTC RES:statusCode=200 (PUT petstore.swagger.io/v2/pet)
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:58UTC REQ:POST petstore.swagger.io/v2/pet/9143431158144664371
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:58UTC RES:statusCode=200 (POST petstore.swagger.io/v2/pet/9143431158144664371)
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:58UTC REQ:POST petstore.swagger.io/v2/pet/9143431158144664371/uploadImage
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC RES:statusCode=200 (POST petstore.swagger.io/v2/pet/9143431158144664371/uploadImage)
+uploadFile: ApiResponse {apiResponseCode = Just 200, apiResponseType = Just "unknown", apiResponseMessage = Just "additionalMetadata: a package.yaml file\nFile uploaded to ./package.yaml, 893 bytes"}
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC REQ:DELETE petstore.swagger.io/v2/pet/9143431158144664371
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC RES:statusCode=200 (DELETE petstore.swagger.io/v2/pet/9143431158144664371)
+******** Store operations ********
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC REQ:GET petstore.swagger.io/v2/store/inventory
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC RES:statusCode=200 (GET petstore.swagger.io/v2/store/inventory)
+getInventoryRequest: found 116 results
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC REQ:POST petstore.swagger.io/v2/store/order
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC RES:statusCode=200 (POST petstore.swagger.io/v2/store/order)
+placeOrderResult: Order {orderId = Just 21, orderPetId = Just 0, orderQuantity = Just 210, orderShipDate = Nothing, orderStatus = Nothing, orderComplete = Just False}
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC REQ:GET petstore.swagger.io/v2/store/order/21
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC RES:statusCode=200 (GET petstore.swagger.io/v2/store/order/21)
+getOrderById: found order: Order {orderId = Just 21, orderPetId = Just 0, orderQuantity = Just 210, orderShipDate = Nothing, orderStatus = Nothing, orderComplete = Just False}
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC REQ:DELETE petstore.swagger.io/v2/store/order/2
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC RES:statusCode=404 (DELETE petstore.swagger.io/v2/store/order/2)
+******** User operations ********
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC REQ:POST petstore.swagger.io/v2/user
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC RES:statusCode=200 (POST petstore.swagger.io/v2/user)
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC REQ:POST petstore.swagger.io/v2/user/createWithArray
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC RES:statusCode=200 (POST petstore.swagger.io/v2/user/createWithArray)
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC REQ:POST petstore.swagger.io/v2/user/createWithList
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC RES:statusCode=200 (POST petstore.swagger.io/v2/user/createWithList)
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC REQ:GET petstore.swagger.io/v2/user/hsusername
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC RES:statusCode=200 (GET petstore.swagger.io/v2/user/hsusername)
+getUserByName: found user: User {userId = Just 21, userUsername = Just "hsusername", userFirstName = Nothing, userLastName = Nothing, userEmail = Nothing, userPassword = Nothing, userPhone = Nothing, userUserStatus = Just 0}
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC REQ:GET petstore.swagger.io/v2/user/login?password=password1&username=hsusername
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC RES:statusCode=200 (GET petstore.swagger.io/v2/user/login?password=password1&username=hsusername)
+loginUser: logged in user session:1504067820457
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC REQ:PUT petstore.swagger.io/v2/user/hsusername
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC RES:statusCode=200 (PUT petstore.swagger.io/v2/user/hsusername)
+[Info#SwaggerPetstore/Client] 2017-08-30T04:36:59UTC REQ:GET petstore.swagger.io/v2/user/logout
+[Info#SwaggerPetstore/Client] 2017-08-30T04:37:00UTC RES:statusCode=200 (GET petstore.swagger.io/v2/user/logout)
+[Info#SwaggerPetstore/Client] 2017-08-30T04:37:00UTC REQ:DELETE petstore.swagger.io/v2/user/hsusername
+[Info#SwaggerPetstore/Client] 2017-08-30T04:37:00UTC RES:statusCode=200 (DELETE petstore.swagger.io/v2/user/hsusername)
+******** END ********

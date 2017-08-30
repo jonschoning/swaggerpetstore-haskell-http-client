@@ -3,10 +3,10 @@
 {-# OPTIONS_GHC -fno-warn-unused-imports -fno-warn-unused-binds -fno-warn-orphans #-}
 
 import qualified Data.Aeson as A
+import qualified Data.ByteString.Lazy.Char8 as BCL
 import qualified Lens.Micro as L
 import qualified Data.Text as T
 import qualified Network.HTTP.Client as NH
-import qualified System.IO as IO
 
 import qualified SwaggerPetstore as S
 
@@ -20,11 +20,11 @@ main = do
   putStrLn "******** CONFIG ********"
   putStrLn (show config)
 
-  -- putStrLn "******** Pet operations ********"
-  -- runPet mgr config
+  putStrLn "******** Pet operations ********"
+  runPet mgr config
 
-  -- putStrLn "******** Store operations ********"
-  -- runStore mgr config
+  putStrLn "******** Store operations ********"
+  runStore mgr config
 
   putStrLn "******** User operations ********"
   runUser mgr config
@@ -78,6 +78,7 @@ runPet mgr config = do
 
   -- deletePet
   let deletePetRequest = S.deletePet petId
+        `S.applyOptionalParam` S.ApiUnderscorekey "api key"
   _ <- S.dispatchLbs mgr config deletePetRequest S.MimeJSON
 
   return ()
@@ -113,13 +114,12 @@ runStore mgr config = do
   return ()
 
 
--- declare that 'createUser' can recieve a JSON content-type request
 instance S.Consumes S.CreateUser S.MimeJSON
+instance S.Consumes S.UpdateUser S.MimeJSON
 
--- declare that 'createUsersWithArrayInput' can recieve a JSON content-type request
 instance S.Consumes S.CreateUsersWithArrayInput S.MimeJSON
-instance S.Produces S.CreateUsersWithArrayInput S.MimeNoContent
 instance S.Consumes S.CreateUsersWithListInput S.MimeJSON
+instance S.Produces S.CreateUsersWithArrayInput S.MimeNoContent
 instance S.Produces S.CreateUsersWithListInput S.MimeNoContent
 
 runUser :: NH.Manager -> S.SwaggerPetstoreConfig -> IO ()
@@ -132,7 +132,7 @@ runUser mgr config = do
   _ <- S.dispatchLbs mgr config createUserRequest S.MimeJSON
 
   -- createUsersWithArrayInput
-  let users = take 7 $ iterate (L.over S.userUsernameT (<> "*") . L.over S.userIdT (+1)) user
+  let users = take 8 $ drop 1 $ iterate (L.over S.userUsernameT (<> "*") . L.over S.userIdT (+1)) user
   let createUsersWithArrayInputRequest = S.createUsersWithArrayInput S.MimeJSON users
   _ <- S.dispatchLbs mgr config createUsersWithArrayInputRequest S.MimeNoContent
 
@@ -147,13 +147,18 @@ runUser mgr config = do
 
   -- loginUser
   let loginUserRequest = S.loginUser username "password1"
-  loginUserResult <- S.dispatchMime mgr config loginUserRequest S.MimeJSON
-  mapM_ (\r -> putStrLn $ "loginUser: " <> T.unpack r) loginUserResult 
+  loginUserResult <- S.dispatchLbs mgr config loginUserRequest S.MimeJSON
+  BCL.putStrLn $ "loginUser: " <> (NH.responseBody loginUserResult)
 
+  -- updateUser
+  let updateUserRequest = S.updateUser S.MimeJSON username (user { S.userEmail = Just "xyz@example.com" })
+  _ <- S.dispatchLbs mgr config updateUserRequest S.MimeJSON
+
+  -- logoutUser
+  _ <- S.dispatchLbs mgr config S.logoutUser S.MimeJSON
   
   -- deleteUser
   let deleteUserRequest = S.deleteUser username
   _ <- S.dispatchLbs mgr config deleteUserRequest S.MimeJSON
 
   return ()
-
