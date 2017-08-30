@@ -107,6 +107,7 @@ runStore mgr config = do
 
   -- getInventory
   let getInventoryRequest = S.getInventory
+        `S.setHeader` [("api_key","special-key")] -- set "api_key" auth method manually
   getInventoryRequestRequestResult <- S.dispatchMime mgr config getInventoryRequest S.MimeJSON
   mapM_ (\r -> putStrLn $ "getInventoryRequest: found " <> (show . length) r <> " results") getInventoryRequestRequestResult
 
