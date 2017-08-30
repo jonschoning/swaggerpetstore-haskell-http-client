@@ -7,6 +7,9 @@ Module : SwaggerPetstore.Client
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DeriveFoldable #-}
+{-# LANGUAGE DeriveTraversable #-}
 {-# OPTIONS_GHC -fno-warn-unused-binds -fno-warn-unused-imports #-}
 
 module SwaggerPetstore.Client where
@@ -123,7 +126,7 @@ data MimeResult res =
   MimeResult { mimeResult :: Either MimeError res -- ^ decoded http body
              , mimeResultResponse :: NH.Response BCL.ByteString -- ^ http response 
              }
-  deriving (Show)
+  deriving (Show, Functor, Foldable, Traversable)
 
 -- | pair of unrender/parser error and http response
 data MimeError =

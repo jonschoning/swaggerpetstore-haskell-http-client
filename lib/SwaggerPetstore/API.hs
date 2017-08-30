@@ -76,6 +76,8 @@ import qualified Prelude as P
 -- 
 -- AuthMethod: petstore_auth
 -- 
+-- Note: Has 'Produces' instances, but no response schema
+-- 
 addPet 
   :: (Consumes AddPet contentType, MimeRender contentType Pet)
   => contentType -- ^ request content-type ('MimeType')
@@ -84,8 +86,6 @@ addPet
 addPet _ body =
   _mkRequest "POST" ["/pet"]
     `setBodyParam` body
-
-{-# WARNING addPet "has Produces instances, but no response schema." #-}
 
 data AddPet 
 
@@ -113,14 +113,14 @@ instance Produces AddPet MimeJSON
 -- 
 -- AuthMethod: petstore_auth
 -- 
+-- Note: Has 'Produces' instances, but no response schema
+-- 
 deletePet 
   :: Integer -- ^ "petId" -  Pet id to delete
   -> SwaggerPetstoreRequest DeletePet MimeNoContent res
 deletePet petId =
   _mkRequest "DELETE" ["/pet/",toPath petId]
     
-
-{-# WARNING deletePet "has Produces instances, but no response schema." #-}
 
 data DeletePet  
 instance HasOptionalParam DeletePet ApiUnderscorekey where
@@ -216,6 +216,8 @@ instance Produces GetPetById MimeJSON
 -- 
 -- AuthMethod: petstore_auth
 -- 
+-- Note: Has 'Produces' instances, but no response schema
+-- 
 updatePet 
   :: (Consumes UpdatePet contentType, MimeRender contentType Pet)
   => contentType -- ^ request content-type ('MimeType')
@@ -224,8 +226,6 @@ updatePet
 updatePet _ body =
   _mkRequest "PUT" ["/pet"]
     `setBodyParam` body
-
-{-# WARNING updatePet "has Produces instances, but no response schema." #-}
 
 data UpdatePet 
 
@@ -253,6 +253,8 @@ instance Produces UpdatePet MimeJSON
 -- 
 -- AuthMethod: petstore_auth
 -- 
+-- Note: Has 'Produces' instances, but no response schema
+-- 
 updatePetWithForm 
   :: (Consumes UpdatePetWithForm contentType)
   => contentType -- ^ request content-type ('MimeType')
@@ -261,8 +263,6 @@ updatePetWithForm
 updatePetWithForm _ petId =
   _mkRequest "POST" ["/pet/",toPath petId]
     
-
-{-# WARNING updatePetWithForm "has Produces instances, but no response schema." #-}
 
 data UpdatePetWithForm  
 
@@ -333,14 +333,14 @@ instance Produces UploadFile MimeJSON
 -- 
 -- For valid response try integer IDs with positive integer value. Negative or non-integer values will generate API errors
 -- 
+-- Note: Has 'Produces' instances, but no response schema
+-- 
 deleteOrder 
   :: Integer -- ^ "orderId" -  ID of the order that needs to be deleted
   -> SwaggerPetstoreRequest DeleteOrder MimeNoContent res
 deleteOrder orderId =
   _mkRequest "DELETE" ["/store/order/",toPath orderId]
     
-
-{-# WARNING deleteOrder "has Produces instances, but no response schema." #-}
 
 data DeleteOrder  
 -- | @application/xml@
@@ -428,6 +428,8 @@ instance Produces PlaceOrder MimeJSON
 -- 
 -- This can only be done by the logged in user.
 -- 
+-- Note: Has 'Produces' instances, but no response schema
+-- 
 createUser 
   :: (Consumes CreateUser contentType, MimeRender contentType User)
   => contentType -- ^ request content-type ('MimeType')
@@ -436,8 +438,6 @@ createUser
 createUser _ body =
   _mkRequest "POST" ["/user"]
     `setBodyParam` body
-
-{-# WARNING createUser "has Produces instances, but no response schema." #-}
 
 data CreateUser 
 
@@ -457,6 +457,8 @@ instance Produces CreateUser MimeJSON
 -- 
 -- 
 -- 
+-- Note: Has 'Produces' instances, but no response schema
+-- 
 createUsersWithArrayInput 
   :: (Consumes CreateUsersWithArrayInput contentType, MimeRender contentType [User])
   => contentType -- ^ request content-type ('MimeType')
@@ -465,8 +467,6 @@ createUsersWithArrayInput
 createUsersWithArrayInput _ body =
   _mkRequest "POST" ["/user/createWithArray"]
     `setBodyParam` body
-
-{-# WARNING createUsersWithArrayInput "has Produces instances, but no response schema." #-}
 
 data CreateUsersWithArrayInput 
 
@@ -486,6 +486,8 @@ instance Produces CreateUsersWithArrayInput MimeJSON
 -- 
 -- 
 -- 
+-- Note: Has 'Produces' instances, but no response schema
+-- 
 createUsersWithListInput 
   :: (Consumes CreateUsersWithListInput contentType, MimeRender contentType [User])
   => contentType -- ^ request content-type ('MimeType')
@@ -494,8 +496,6 @@ createUsersWithListInput
 createUsersWithListInput _ body =
   _mkRequest "POST" ["/user/createWithList"]
     `setBodyParam` body
-
-{-# WARNING createUsersWithListInput "has Produces instances, but no response schema." #-}
 
 data CreateUsersWithListInput 
 
@@ -515,14 +515,14 @@ instance Produces CreateUsersWithListInput MimeJSON
 -- 
 -- This can only be done by the logged in user.
 -- 
+-- Note: Has 'Produces' instances, but no response schema
+-- 
 deleteUser 
   :: Text -- ^ "username" -  The name that needs to be deleted
   -> SwaggerPetstoreRequest DeleteUser MimeNoContent res
 deleteUser username =
   _mkRequest "DELETE" ["/user/",toPath username]
     
-
-{-# WARNING deleteUser "has Produces instances, but no response schema." #-}
 
 data DeleteUser  
 -- | @application/xml@
@@ -585,12 +585,12 @@ instance Produces LoginUser MimeJSON
 -- 
 -- 
 -- 
+-- Note: Has 'Produces' instances, but no response schema
+-- 
 logoutUser 
   :: SwaggerPetstoreRequest LogoutUser MimeNoContent res
 logoutUser =
   _mkRequest "GET" ["/user/logout"]
-
-{-# WARNING logoutUser "has Produces instances, but no response schema." #-}
 
 data LogoutUser  
 -- | @application/xml@
@@ -607,6 +607,8 @@ instance Produces LogoutUser MimeJSON
 -- 
 -- This can only be done by the logged in user.
 -- 
+-- Note: Has 'Produces' instances, but no response schema
+-- 
 updateUser 
   :: (Consumes UpdateUser contentType, MimeRender contentType User)
   => contentType -- ^ request content-type ('MimeType')
@@ -617,8 +619,6 @@ updateUser _ username body =
   _mkRequest "PUT" ["/user/",toPath username]
     
     `setBodyParam` body
-
-{-# WARNING updateUser "has Produces instances, but no response schema." #-}
 
 data UpdateUser 
 
