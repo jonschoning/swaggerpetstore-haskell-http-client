@@ -61,7 +61,7 @@ runPet mgr config = do
         { S.petStatus   = Just "available"
         , S.petCategory = Just (S.Category (Just 3) (Just "catname"))
         }
-  _ <- S.dispatchLbs mgr config updatePetRequest S.MimeJSON
+  _ <- S.dispatchLbs mgr config updatePetRequest S.MimeXML
   
   -- updatePetWithForm
   let updatePetWithFormRequest = S.updatePetWithForm S.MimeFormUrlEncoded petId
