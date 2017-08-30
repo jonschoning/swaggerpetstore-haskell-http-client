@@ -43,48 +43,55 @@ runPet mgr config = do
   -- addPet
   let addPetRequest = S.addPet S.MimeJSON (S.mkPet "name" ["url1", "url2"])
   addPetResponse <- S.dispatchLbs mgr config addPetRequest S.MimeJSON
-  let Just pet = A.decode (NH.responseBody addPetResponse)
-      Just petId = S.petId pet
 
-  -- getPetByid
-  let getPetByIdRequest = S.getPetById petId
-  getPetByIdRequestResult <- S.dispatchMime mgr config getPetByIdRequest S.MimeJSON
-  mapM_ (\r -> putStrLn $ "getPetById: found pet: " <> show r) getPetByIdRequestResult 
+  -- decode response manually, since swagger file has no response schema for 'addPet'
+  case A.eitherDecode (NH.responseBody addPetResponse) of
+    Right pet@S.Pet { S.petId = Just pid } -> do
 
-  -- findPetsByStatus
-  let findPetsByStatusRequest = S.findPetsByStatus ["available","pending","sold"]
-  findPetsByStatusResult <- S.dispatchMime mgr config findPetsByStatusRequest S.MimeJSON
-  mapM_ (\r -> putStrLn $ "findPetsByStatus: found " <> (show . length) r <> " pets") findPetsByStatusResult 
-      
-  -- findPetsByTags
-  let findPetsByTagsRequest = S.findPetsByTags ["name","tag1"]
-  findPetsByTagsResult <- S.dispatchMime mgr config findPetsByTagsRequest S.MimeJSON
-  mapM_ (\r -> putStrLn $ "findPetsByTags: found " <> (show . length) r <> " pets") findPetsByTagsResult 
+        -- getPetByid
+        let getPetByIdRequest = S.getPetById pid
+        getPetByIdRequestResult <- S.dispatchMime mgr config getPetByIdRequest S.MimeJSON
+        mapM_ (\r -> putStrLn $ "getPetById: found pet: " <> show r) getPetByIdRequestResult 
 
-  -- updatePet
-  let updatePetRequest = S.updatePet S.MimeJSON $ pet
-        { S.petStatus   = Just "available"
-        , S.petCategory = Just (S.Category (Just 3) (Just "catname"))
-        }
-  _ <- S.dispatchLbs mgr config updatePetRequest S.MimeXML
-  
-  -- updatePetWithForm
-  let updatePetWithFormRequest = S.updatePetWithForm S.MimeFormUrlEncoded petId
-        `S.applyOptionalParam` S.Name "petName"
-        `S.applyOptionalParam` S.Status "pending"
-  _ <- S.dispatchLbs mgr config updatePetWithFormRequest S.MimeJSON
+        -- findPetsByStatus
+        let findPetsByStatusRequest = S.findPetsByStatus ["available","pending","sold"]
+        findPetsByStatusResult <- S.dispatchMime mgr config findPetsByStatusRequest S.MimeJSON
+        mapM_ (\r -> putStrLn $ "findPetsByStatus: found " <> (show . length) r <> " pets") findPetsByStatusResult 
 
-  -- uploadFile
-  let uploadFileRequest = S.uploadFile S.MimeMultipartFormData petId
-        `S.applyOptionalParam` S.File "package.yaml"
-        `S.applyOptionalParam` S.AdditionalMetadata "a package.yaml file"
-  uploadFileRequestResult <- S.dispatchMime mgr config uploadFileRequest S.MimeJSON
-  mapM_ (\r -> putStrLn $ "uploadFile: " <> show r) uploadFileRequestResult 
+        -- findPetsByTags
+        let findPetsByTagsRequest = S.findPetsByTags ["name","tag1"]
+        findPetsByTagsResult <- S.dispatchMime mgr config findPetsByTagsRequest S.MimeJSON
+        mapM_ (\r -> putStrLn $ "findPetsByTags: found " <> (show . length) r <> " pets") findPetsByTagsResult 
 
-  -- deletePet
-  let deletePetRequest = S.deletePet petId
-        `S.applyOptionalParam` S.ApiUnderscorekey "api key"
-  _ <- S.dispatchLbs mgr config deletePetRequest S.MimeJSON
+        -- updatePet
+        let updatePetRequest = S.updatePet S.MimeJSON $ pet
+                { S.petStatus   = Just "available"
+                , S.petCategory = Just (S.Category (Just 3) (Just "catname"))
+                }
+        _ <- S.dispatchLbs mgr config updatePetRequest S.MimeXML
+
+        -- updatePetWithForm
+        let updatePetWithFormRequest = S.updatePetWithForm S.MimeFormUrlEncoded pid
+                `S.applyOptionalParam` S.Name "petName"
+                `S.applyOptionalParam` S.Status "pending"
+        _ <- S.dispatchLbs mgr config updatePetWithFormRequest S.MimeJSON
+
+        -- uploadFile
+        let uploadFileRequest = S.uploadFile S.MimeMultipartFormData pid
+                `S.applyOptionalParam` S.File "package.yaml"
+                `S.applyOptionalParam` S.AdditionalMetadata "a package.yaml file"
+        uploadFileRequestResult <- S.dispatchMime mgr config uploadFileRequest S.MimeJSON
+        mapM_ (\r -> putStrLn $ "uploadFile: " <> show r) uploadFileRequestResult 
+
+        -- deletePet
+        let deletePetRequest = S.deletePet pid
+                `S.applyOptionalParam` S.ApiUnderscorekey "api key"
+        _ <- S.dispatchLbs mgr config deletePetRequest S.MimeJSON
+
+        return ()
+
+    Left e -> putStrLn e
+    _ -> putStrLn "no Pet id returned"
 
   return ()
 
