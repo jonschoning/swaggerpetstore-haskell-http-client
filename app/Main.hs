@@ -12,6 +12,8 @@ import qualified SwaggerPetstore as S
 
 import Data.Monoid ((<>))
 
+-- * MAIN
+
 main :: IO ()
 main = do
   mgr <- NH.newManager NH.defaultManagerSettings
@@ -32,6 +34,9 @@ main = do
   putStrLn "******** END ********"
 
   return ()
+
+
+-- * PET
 
 runPet :: NH.Manager -> S.SwaggerPetstoreConfig -> IO ()
 runPet mgr config = do
@@ -83,6 +88,10 @@ runPet mgr config = do
 
   return ()
 
+
+
+-- * STORE
+  
 -- declare that 'placeOrder' can recieve a JSON content-type request
 instance S.Consumes S.PlaceOrder S.MimeJSON 
 
@@ -113,6 +122,9 @@ runStore mgr config = do
 
   return ()
 
+
+
+-- * USER
 
 instance S.Consumes S.CreateUser S.MimeJSON
 instance S.Consumes S.UpdateUser S.MimeJSON
