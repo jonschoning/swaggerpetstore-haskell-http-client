@@ -9,8 +9,8 @@ before_install:
 - export PATH=$HOME/.local/bin:$PATH
 - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 script:
-- stack --install-ghc haddock
-- stack --install-ghc test
+- stack --install-ghc --no-haddock-deps haddock
+- stack test
 cache:
   directories:
   - $HOME/.stack
