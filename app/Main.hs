@@ -20,7 +20,12 @@ main = do
   mgr <- NH.newManager NH.defaultManagerSettings
 
   -- print log messages to sdtout
-  let config = S.withStdoutLogging S.newConfig -- { S.configLoggingFilter = S.debugLevelFilter }
+  let config =
+        S.withStdoutLogging
+          S.newConfig
+          { S.configHost = "http://0.0.0.0/v2"
+          -- , S.configLoggingFilter = S.debugLevelFilter
+          }
 
   putStrLn "******** CONFIG ********"
   putStrLn (show config)
