@@ -147,7 +147,7 @@ findPetsByStatus
   -> SwaggerPetstoreRequest FindPetsByStatus MimeNoContent [Pet]
 findPetsByStatus status =
   _mkRequest "GET" ["/pet/findByStatus"]
-    `_setQuery` toQueryColl MultiParamArray ("status", Just status)
+    `_setQuery` toQueryColl CommaSeparated ("status", Just status)
 
 data FindPetsByStatus  
 -- | @application/xml@
@@ -162,7 +162,7 @@ instance Produces FindPetsByStatus MimeJSON
 -- 
 -- Finds Pets by tags
 -- 
--- Muliple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.
+-- Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.
 -- 
 -- AuthMethod: petstore_auth
 -- 
@@ -171,7 +171,7 @@ findPetsByTags
   -> SwaggerPetstoreRequest FindPetsByTags MimeNoContent [Pet]
 findPetsByTags tags =
   _mkRequest "GET" ["/pet/findByTags"]
-    `_setQuery` toQueryColl MultiParamArray ("tags", Just tags)
+    `_setQuery` toQueryColl CommaSeparated ("tags", Just tags)
 
 {-# DEPRECATED findPetsByTags "" #-}
 
@@ -331,12 +331,12 @@ instance Produces UploadFile MimeJSON
 -- 
 -- Delete purchase order by ID
 -- 
--- For valid response try integer IDs with positive integer value. Negative or non-integer values will generate API errors
+-- For valid response try integer IDs with value < 1000. Anything above 1000 or nonintegers will generate API errors
 -- 
 -- Note: Has 'Produces' instances, but no response schema
 -- 
 deleteOrder 
-  :: Integer -- ^ "orderId" -  ID of the order that needs to be deleted
+  :: Text -- ^ "orderId" -  ID of the order that needs to be deleted
   -> SwaggerPetstoreRequest DeleteOrder MimeNoContent res
 deleteOrder orderId =
   _mkRequest "DELETE" ["/store/order/",toPath orderId]
@@ -375,7 +375,7 @@ instance Produces GetInventory MimeJSON
 -- 
 -- Find purchase order by ID
 -- 
--- For valid response try integer IDs with value >= 1 and <= 10. Other values will generated exceptions
+-- For valid response try integer IDs with value <= 5 or > 10. Other values will generated exceptions
 -- 
 getOrderById 
   :: Integer -- ^ "orderId" -  ID of pet that needs to be fetched
@@ -612,7 +612,7 @@ instance Produces LogoutUser MimeJSON
 updateUser 
   :: (Consumes UpdateUser contentType, MimeRender contentType User)
   => contentType -- ^ request content-type ('MimeType')
-  -> Text -- ^ "username" -  name that need to be updated
+  -> Text -- ^ "username" -  name that need to be deleted
   -> User -- ^ "body" -  Updated user object
   -> SwaggerPetstoreRequest UpdateUser contentType res
 updateUser _ username body =
@@ -735,7 +735,6 @@ _setAcceptHeader req accept =
 _setQuery :: SwaggerPetstoreRequest req contentType res -> [NH.QueryItem] -> SwaggerPetstoreRequest req contentType res
 _setQuery req query = 
     let _params = params req 
-    -- in req { params = _params { paramsQuery = query P.++ paramsQuery _params } }
     in req { params = _params { paramsQuery = query P.++ [q | q <- paramsQuery _params, cifst q `P.notElem` P.fmap cifst query] } }
   where cifst = CI.mk . P.fst
 

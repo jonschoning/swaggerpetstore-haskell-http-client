@@ -165,7 +165,7 @@ runStore mgr config = do
   mapM_ (\r -> putStrLn $ "getOrderById: found order: " <> show r) getOrderByIdRequestResult 
 
   -- deleteOrder
-  let deleteOrderRequest = S.deleteOrder 2
+  let deleteOrderRequest = S.deleteOrder "4"
   _ <- S.dispatchLbs mgr config deleteOrderRequest S.MimeJSON
 
   return ()

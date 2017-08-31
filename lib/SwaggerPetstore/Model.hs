@@ -43,7 +43,10 @@ import qualified Prelude as P
 
 
 -- ** ApiResponse
-
+-- |
+-- An uploaded response
+-- 
+-- Describes the result of uploading an image resource
 data ApiResponse = ApiResponse
   { apiResponseCode :: Maybe Int -- ^ "code"
   , apiResponseType :: Maybe Text -- ^ "type"
@@ -79,7 +82,10 @@ mkApiResponse =
 
 
 -- ** Category
-
+-- |
+-- Pet catehgry
+-- 
+-- A category for a pet
 data Category = Category
   { categoryId :: Maybe Integer -- ^ "id"
   , categoryName :: Maybe Text -- ^ "name"
@@ -111,7 +117,10 @@ mkCategory =
 
 
 -- ** Order
-
+-- |
+-- Pet Order
+-- 
+-- An order for a pets from the pet store
 data Order = Order
   { orderId :: Maybe Integer -- ^ "id"
   , orderPetId :: Maybe Integer -- ^ "petId"
@@ -159,7 +168,10 @@ mkOrder =
 
 
 -- ** Pet
-
+-- |
+-- a Pet
+-- 
+-- A pet for sale in the pet store
 data Pet = Pet
   { petId :: Maybe Integer -- ^ "id"
   , petCategory :: Maybe Category -- ^ "category"
@@ -209,7 +221,10 @@ mkPet petName petPhotoUrls =
 
 
 -- ** Tag
-
+-- |
+-- Pet Tag
+-- 
+-- A tag for a pet
 data Tag = Tag
   { tagId :: Maybe Integer -- ^ "id"
   , tagName :: Maybe Text -- ^ "name"
@@ -241,7 +256,10 @@ mkTag =
 
 
 -- ** User
-
+-- |
+-- a User
+-- 
+-- A User who is purchasing from the pet store
 data User = User
   { userId :: Maybe Integer -- ^ "id"
   , userUsername :: Maybe Text -- ^ "username"
