@@ -12,6 +12,7 @@ Module : SwaggerPetstore.Model
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -fno-warn-unused-matches -fno-warn-unused-binds -fno-warn-unused-imports #-}
 
 module SwaggerPetstore.Model where
@@ -28,12 +29,16 @@ import qualified Data.Data as P (Data, Typeable)
 import qualified Data.HashMap.Lazy as HM
 import qualified Data.Map as Map
 import qualified Data.Maybe as P
+import qualified Data.Foldable as P
 import qualified Web.FormUrlEncoded as WH
 import qualified Web.HttpApiData as WH
 
 import qualified Data.Time as TI
+import qualified Data.Time.ISO8601 as TI
 import Data.Time (UTCTime)
 
+import Control.Applicative ((<|>))
+import Control.Applicative (Alternative)
 import Prelude (($), (.),(<$>),(<*>),(>>=),Maybe(..),Bool(..),Char,Double,FilePath,Float,Int,Integer,String,fmap,undefined,mempty,maybe,pure,Monad,Applicative,Functor)
 import qualified Prelude as P
 
@@ -337,36 +342,37 @@ _memptyToNothing (Just x) | x P.== P.mempty = Nothing
 _memptyToNothing x = x
 {-# INLINE _memptyToNothing #-}
 
+-- * DateTime Formatting
+
+-- | @_parseISO8601@
+_readDateTime :: (TI.ParseTime t, Monad m, Alternative m) => String -> m t
+_readDateTime =
+  _parseISO8601
+{-# INLINE _readDateTime #-}
+
+-- | @TI.formatISO8601Millis@
+_showDateTime :: (t ~ UTCTime, TI.FormatTime t) => t -> String
+_showDateTime =
+  TI.formatISO8601Millis
+{-# INLINE _showDateTime #-}
+
+_parseISO8601 :: (TI.ParseTime t, Monad m, Alternative m) => String -> m t
+_parseISO8601 t =
+  P.asum $
+  P.flip (TI.parseTimeM True TI.defaultTimeLocale) t <$>
+  ["%FT%T%QZ", "%FT%T%Q%z", "%FT%T%Q%Z"]
+{-# INLINE _parseISO8601 #-}
+
 -- * Date Formatting
 
--- | @TI.parseTimeM True TI.defaultTimeLocale _dateTimeFormat@
-_readDateTime
-  :: (TI.ParseTime t, P.Monad m)
-  => String -> m t
-_readDateTime = TI.parseTimeM True TI.defaultTimeLocale _dateTimeFormat
+-- | @TI.parseTimeM True TI.defaultTimeLocale ""@
+_readDate :: (TI.ParseTime t, Monad m) => String -> m t
+_readDate =
+  TI.parseTimeM True TI.defaultTimeLocale ""
+{-# INLINE _readDate #-}
 
--- | @TI.formatTime TI.defaultTimeLocale _dateTimeFormat@
-_showDateTime
-  :: TI.FormatTime t
-  => t -> String
-_showDateTime = TI.formatTime TI.defaultTimeLocale _dateTimeFormat
-
--- | @%Y-%m-%dT%H:%M:%S%Q%z@
-_dateTimeFormat :: String
-_dateTimeFormat = "%Y-%m-%dT%H:%M:%S%Q%z"
-
--- | @TI.parseTimeM True TI.defaultTimeLocale _dateFormat@
-_readDate
-  :: (TI.ParseTime t, P.Monad m)
-  => String -> m t
-_readDate = TI.parseTimeM True TI.defaultTimeLocale _dateFormat
-
--- | @TI.formatTime TI.defaultTimeLocale _dateFormat@
-_showDate
-  :: TI.FormatTime t
-  => t -> String
-_showDate = TI.formatTime TI.defaultTimeLocale _dateFormat
-
--- | @%Y-%m-%d@
-_dateFormat :: String
-_dateFormat = "%Y-%m-%d"
+-- | @TI.formatTime TI.defaultTimeLocale ""@
+_showDate :: TI.FormatTime t => t -> String
+_showDate =
+  TI.formatTime TI.defaultTimeLocale ""
+{-# INLINE _showDate #-}

@@ -4,8 +4,9 @@
 
 import qualified Data.Aeson as A
 import qualified Data.ByteString.Lazy.Char8 as BCL
-import qualified Lens.Micro as L
 import qualified Data.Text as T
+import qualified Data.Time as TI
+import qualified Lens.Micro as L
 import qualified Network.HTTP.Client as NH
 
 import qualified SwaggerPetstore as S
@@ -22,10 +23,8 @@ main = do
   -- print log messages to sdtout
   let config =
         S.withStdoutLogging
-          S.newConfig
-          { S.configHost = "http://0.0.0.0/v2"
-          -- , S.configLoggingFilter = S.debugLevelFilter
-          }
+          S.newConfig -- { S.configHost = "http://0.0.0.0/v2"
+                      -- , S.configLoggingFilter = S.debugLevelFilter }
 
   putStrLn "******** CONFIG ********"
   putStrLn (show config)
@@ -157,8 +156,8 @@ runStore mgr config = do
   mapM_ (\r -> putStrLn $ "getInventoryRequest: found " <> (show . length) r <> " results") getInventoryRequestRequestResult
 
   -- placeOrder
-  -- now <- TI.getCurrentTime
-  let placeOrderRequest = S.placeOrder S.MimeJSON (S.mkOrder { S.orderId = Just 21, S.orderQuantity = Just 210 }) --, S.orderShipDate = Just now})
+  now <- TI.getCurrentTime
+  let placeOrderRequest = S.placeOrder S.MimeJSON (S.mkOrder { S.orderId = Just 21, S.orderQuantity = Just 210, S.orderShipDate = Just now})
   placeOrderResult <- S.dispatchMime mgr config placeOrderRequest S.MimeJSON
   mapM_ (\r -> putStrLn $ "placeOrderResult: " <> show r) placeOrderResult
 
