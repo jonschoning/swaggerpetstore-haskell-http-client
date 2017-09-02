@@ -23,8 +23,9 @@ main = do
   -- print log messages to sdtout
   let config =
         S.withStdoutLogging
-          S.newConfig -- { S.configHost = "http://0.0.0.0/v2"
-                      -- , S.configLoggingFilter = S.debugLevelFilter }
+          S.newConfig { S.configHost = "http://0.0.0.0/v2"
+                      -- , S.configLoggingFilter = S.debugLevelFilter
+                      }
 
   putStrLn "******** CONFIG ********"
   putStrLn (show config)
@@ -169,7 +170,7 @@ runStore mgr config = do
   mapM_ (\r -> putStrLn $ "getOrderById: found order: " <> show r) getOrderByIdRequestResult 
 
   -- deleteOrder
-  let deleteOrderRequest = S.deleteOrder "4"
+  let deleteOrderRequest = S.deleteOrder "21"
   _ <- S.dispatchLbs mgr config deleteOrderRequest S.MimeJSON
 
   return ()
