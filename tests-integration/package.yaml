@@ -10,6 +10,8 @@ maintainer: author.name@email.com
 copyright: YEAR - AUTHOR
 license: UnspecifiedLicense
 homepage: https://github.com/swagger-api/swagger-codegen#readme
+extra-source-files:
+- README.md
 ghc-options: -Wall
 dependencies:
 - base >=4.7 && <5.0

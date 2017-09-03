@@ -15,6 +15,9 @@ license:        UnspecifiedLicense
 build-type:     Simple
 cabal-version:  >= 1.10
 
+extra-source-files:
+    README.md
+
 executable swagger-petstore-app
   main-is: Main.hs
   ghc-options: -Wall
