@@ -3,6 +3,8 @@
 This contains an example application which uses the auto-generated
 swagger-petstore API Client: `haskell-http-client`
 
+This module is not auto-generated.
+
 The application requires a swagger petstore server running at
 `http://0.0.0.0/v2`, or the value of the `HOST` environment variable.
 
