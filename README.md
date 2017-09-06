@@ -85,13 +85,13 @@ java -jar modules/swagger-codegen-cli/target/swagger-codegen-cli.jar config-help
 
 An example of the generated haddock documentation targeting the server http://petstore.swagger.io/ (SwaggerPetstore) can be found [here][2]
 
-[2]: https://jonschoning.github.io/swaggerpetstore-haskell-http-client/
+[2]: https://hackage.haskell.org/package/swagger-petstore-0.0.1.0
 
 ### Example SwaggerPetstore App
 
 An example application using the auto-generated haskell-http-client bindings for the server http://petstore.swagger.io/ can be found [here][3]
 
-[3]: https://github.com/jonschoning/swagger-codegen/tree/haskell-http-client/samples/client/petstore/haskell-http-client/example-app
+[3]: https://github.com/swagger-api/swagger-codegen/tree/c7d145a4ba3c0627e04ece9eb97e354ac91be821/samples/client/petstore/haskell-http-client/example-app
 
 ### Usage Notes
 
