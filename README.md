@@ -50,9 +50,12 @@ haskell-http-client
     
     - use `setHeader` to add any required headers to requests
 
+* Model Inheritance
+
 * Default Parameter Values
 
 * Enum Parameters
+
 
 This is beta software; other cases may not be supported.
 
