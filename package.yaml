@@ -37,7 +37,7 @@ ghc-options: -Wall
 library:
   source-dirs: lib
   ghc-options:
-  
+  - -funbox-strict-fields
   exposed-modules:
   - SwaggerPetstore
   - SwaggerPetstore.API
