@@ -1,5 +1,5 @@
 name:           swagger-petstore
-version:        0.0.1.4
+version:        0.0.1.5
 synopsis:       Auto-generated swagger-petstore API Client
 description:    .
                 Client library for calling the swagger-petstore API based on http-client.
@@ -22,7 +22,6 @@ copyright:      2017 - Jon Schoning
 license:        MIT
 build-type:     Simple
 cabal-version:  >= 1.10
-
 extra-source-files:
     README.md
     swagger.yaml
@@ -40,7 +39,7 @@ library
     , bytestring >=0.10.0 && <0.11
     , base64-bytestring >1.0 && <2.0
     , containers >=0.5.0.0 && <0.6
-    , http-types >=0.8 && <0.10
+    , http-types >=0.8 && <0.11
     , http-client >=0.5 && <0.6
     , http-client-tls
     , http-api-data >= 0.3.4 && <0.4
