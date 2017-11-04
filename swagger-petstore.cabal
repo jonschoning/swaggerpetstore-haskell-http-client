@@ -1,5 +1,5 @@
 name:           swagger-petstore
-version:        0.0.1.5
+version:        0.0.1.6
 synopsis:       Auto-generated swagger-petstore API Client
 description:    .
                 Client library for calling the swagger-petstore API based on http-client.
