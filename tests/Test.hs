@@ -12,8 +12,8 @@ import Test.Hspec.QuickCheck
 import PropMime
 import Instances ()
 
-import SwaggerPetstore.Model
-import SwaggerPetstore.MimeTypes
+import OpenAPIPetstore.Model
+import OpenAPIPetstore.MimeTypes
 
 main :: IO ()
 main =
@@ -28,9 +28,11 @@ main =
       propMimeEq MimeJSON (Proxy :: Proxy ArrayOfNumberOnly)
       propMimeEq MimeJSON (Proxy :: Proxy ArrayTest)
       propMimeEq MimeJSON (Proxy :: Proxy Capitalization)
+      propMimeEq MimeJSON (Proxy :: Proxy Cat)
       propMimeEq MimeJSON (Proxy :: Proxy Category)
       propMimeEq MimeJSON (Proxy :: Proxy ClassModel)
       propMimeEq MimeJSON (Proxy :: Proxy Client)
+      propMimeEq MimeJSON (Proxy :: Proxy Dog)
       propMimeEq MimeJSON (Proxy :: Proxy EnumArrays)
       propMimeEq MimeJSON (Proxy :: Proxy EnumClass)
       propMimeEq MimeJSON (Proxy :: Proxy EnumTest)
@@ -44,16 +46,11 @@ main =
       propMimeEq MimeJSON (Proxy :: Proxy Name)
       propMimeEq MimeJSON (Proxy :: Proxy NumberOnly)
       propMimeEq MimeJSON (Proxy :: Proxy Order)
-      propMimeEq MimeJSON (Proxy :: Proxy OuterBoolean)
       propMimeEq MimeJSON (Proxy :: Proxy OuterComposite)
       propMimeEq MimeJSON (Proxy :: Proxy OuterEnum)
-      propMimeEq MimeJSON (Proxy :: Proxy OuterNumber)
-      propMimeEq MimeJSON (Proxy :: Proxy OuterString)
       propMimeEq MimeJSON (Proxy :: Proxy Pet)
       propMimeEq MimeJSON (Proxy :: Proxy ReadOnlyFirst)
       propMimeEq MimeJSON (Proxy :: Proxy SpecialModelName)
       propMimeEq MimeJSON (Proxy :: Proxy Tag)
       propMimeEq MimeJSON (Proxy :: Proxy User)
-      propMimeEq MimeJSON (Proxy :: Proxy Cat)
-      propMimeEq MimeJSON (Proxy :: Proxy Dog)
       

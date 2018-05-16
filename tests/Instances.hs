@@ -2,8 +2,8 @@
 
 module Instances where
 
-import SwaggerPetstore.Model
-import SwaggerPetstore.Core
+import OpenAPIPetstore.Model
+import OpenAPIPetstore.Core
 
 import qualified Data.Aeson as A
 import qualified Data.ByteString.Lazy as BL
@@ -140,6 +140,13 @@ instance Arbitrary Capitalization where
       <*> arbitrary -- capitalizationScaEthFlowPoints :: Maybe Text
       <*> arbitrary -- capitalizationAttName :: Maybe Text
     
+instance Arbitrary Cat where
+  arbitrary =
+    Cat
+      <$> arbitrary -- catClassName :: Text
+      <*> arbitrary -- catColor :: Maybe Text
+      <*> arbitrary -- catDeclawed :: Maybe Bool
+    
 instance Arbitrary Category where
   arbitrary =
     Category
@@ -156,6 +163,13 @@ instance Arbitrary Client where
     Client
       <$> arbitrary -- clientClient :: Maybe Text
     
+instance Arbitrary Dog where
+  arbitrary =
+    Dog
+      <$> arbitrary -- dogClassName :: Text
+      <*> arbitrary -- dogColor :: Maybe Text
+      <*> arbitrary -- dogBreed :: Maybe Text
+    
 instance Arbitrary EnumArrays where
   arbitrary =
     EnumArrays
@@ -166,6 +180,7 @@ instance Arbitrary EnumTest where
   arbitrary =
     EnumTest
       <$> arbitrary -- enumTestEnumString :: Maybe Text
+      <*> arbitrary -- enumTestEnumStringRequired :: Text
       <*> arbitrary -- enumTestEnumInteger :: Maybe Int
       <*> arbitrary -- enumTestEnumNumber :: Maybe Double
       <*> arbitrary -- enumTestOuterEnum :: Maybe OuterEnum
@@ -181,7 +196,7 @@ instance Arbitrary FormatTest where
       <*> arbitrary -- formatTestDouble :: Maybe Double
       <*> arbitrary -- formatTestString :: Maybe Text
       <*> arbitrary -- formatTestByte :: ByteArray
-      <*> arbitrary -- formatTestBinary :: Maybe Binary
+      <*> arbitrary -- formatTestBinary :: Maybe FilePath
       <*> arbitrary -- formatTestDate :: Date
       <*> arbitrary -- formatTestDateTime :: Maybe DateTime
       <*> arbitrary -- formatTestUuid :: Maybe Text
@@ -215,7 +230,7 @@ instance Arbitrary Model200Response where
 instance Arbitrary ModelList where
   arbitrary =
     ModelList
-      <$> arbitrary -- modelList123List :: Maybe Text
+      <$> arbitrary -- modelList123list :: Maybe Text
     
 instance Arbitrary ModelReturn where
   arbitrary =
@@ -228,7 +243,7 @@ instance Arbitrary Name where
       <$> arbitrary -- nameName :: Int
       <*> arbitrary -- nameSnakeCase :: Maybe Int
       <*> arbitrary -- nameProperty :: Maybe Text
-      <*> arbitrary -- name123Number :: Maybe Int
+      <*> arbitrary -- name123number :: Maybe Int
     
 instance Arbitrary NumberOnly where
   arbitrary =
@@ -245,22 +260,13 @@ instance Arbitrary Order where
       <*> arbitrary -- orderStatus :: Maybe Text
       <*> arbitrary -- orderComplete :: Maybe Bool
     
-instance Arbitrary OuterBoolean where
-  arbitrary =
-    OuterBoolean <$> arbitrary
 instance Arbitrary OuterComposite where
   arbitrary =
     OuterComposite
-      <$> arbitrary -- outerCompositeMyNumber :: Maybe OuterNumber
-      <*> arbitrary -- outerCompositeMyString :: Maybe OuterString
-      <*> arbitrary -- outerCompositeMyBoolean :: Maybe OuterBoolean
+      <$> arbitrary -- outerCompositeMyNumber :: Maybe Double
+      <*> arbitrary -- outerCompositeMyString :: Maybe Text
+      <*> arbitrary -- outerCompositeMyBoolean :: Maybe Bool
     
-instance Arbitrary OuterNumber where
-  arbitrary =
-    OuterNumber <$> arbitrary
-instance Arbitrary OuterString where
-  arbitrary =
-    OuterString <$> arbitrary
 instance Arbitrary Pet where
   arbitrary =
     Pet
@@ -300,20 +306,6 @@ instance Arbitrary User where
       <*> arbitrary -- userPhone :: Maybe Text
       <*> arbitrary -- userUserStatus :: Maybe Int
     
-instance Arbitrary Cat where
-  arbitrary =
-    Cat
-      <$> arbitrary -- catClassName :: Text
-      <*> arbitrary -- catColor :: Maybe Text
-      <*> arbitrary -- catDeclawed :: Maybe Bool
-    
-instance Arbitrary Dog where
-  arbitrary =
-    Dog
-      <$> arbitrary -- dogClassName :: Text
-      <*> arbitrary -- dogColor :: Maybe Text
-      <*> arbitrary -- dogBreed :: Maybe Text
-    
 
 
 
@@ -321,6 +313,9 @@ instance Arbitrary E'ArrayEnum where
   arbitrary = arbitraryBoundedEnum
 
 instance Arbitrary E'EnumFormString where
+  arbitrary = arbitraryBoundedEnum
+
+instance Arbitrary E'EnumFormStringArray where
   arbitrary = arbitraryBoundedEnum
 
 instance Arbitrary E'EnumInteger where
@@ -336,9 +331,6 @@ instance Arbitrary E'EnumString where
   arbitrary = arbitraryBoundedEnum
 
 instance Arbitrary E'Inner where
-  arbitrary = arbitraryBoundedEnum
-
-instance Arbitrary E'Inner2 where
   arbitrary = arbitraryBoundedEnum
 
 instance Arbitrary E'JustSymbol where
