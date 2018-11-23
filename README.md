@@ -2,7 +2,7 @@
 
 The library in `lib` provides auto-generated-from-OpenAPI [http-client](https://www.stackage.org/lts-10.0/package/http-client-0.5.7.1) bindings to the OpenAPI Petstore API.
 
-OpenApi Version: 3.0.0
+OpenApi Version: 3.0.1
 
 ## Installation
 
@@ -36,7 +36,7 @@ to obtain and use the openapi-generator cli tool lives at
 
 https://openapi-generator.tech
 
-The _language_ argument (`--lang`) passed to the cli tool used should be 
+The _generator-name_ argument (`--generator-name`) passed to the cli tool used should be
 
 ```
 haskell-http-client
@@ -80,13 +80,13 @@ These options allow some customization of the code generation process.
 An example setting _strictFields_ and _dateTimeFormat_:
 
 ```
-java -jar openapi-generator-cli.jar generate -i petstore.yaml -l haskell-http-client -o output/haskell-http-client -DstrictFields=true -DdateTimeFormat="%Y-%m-%dT%H:%M:%S%Q%z"
+java -jar openapi-generator-cli.jar generate -i petstore.yaml -g haskell-http-client -o output/haskell-http-client -DstrictFields=true -DdateTimeFormat="%Y-%m-%dT%H:%M:%S%Q%z"
 ```
 
 View the full list of Codegen "config option" parameters with the command:
 
 ```
-java -jar openapi-generator-cli.jar config-help -l haskell-http-client
+java -jar openapi-generator-cli.jar config-help -g haskell-http-client
 ```
 
 ## Usage Notes

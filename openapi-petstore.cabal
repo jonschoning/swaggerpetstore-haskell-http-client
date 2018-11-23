@@ -1,5 +1,5 @@
-name:           swagger-petstore
-version:        0.0.2.0
+name:           openapi-petstore
+version:        0.0.3.0
 synopsis:       Auto-generated openapi-petstore API Client
 description:    .
                 Client library for calling the OpenAPI Petstore API based on http-client.
@@ -10,14 +10,15 @@ description:    .
                 .
                 OpenAPI Petstore API version: 1.0.0
                 .
-                OpenAPI version: 3.0.0
+                OpenAPI version: 3.0.1
                 .
-category:       Web
+                category:       Web
 homepage:       https://openapi-generator.tech
-author:         Jon Schoning
-maintainer:     jonschoning@gmail.com
-copyright:      2017 - Jon Schoning
+author:         Author Name Here
+maintainer:     author.name@email.com
+copyright:      YEAR - AUTHOR
 license:        MIT
+category:       Web
 build-type:     Simple
 cabal-version:  >= 1.10
 
@@ -56,7 +57,7 @@ library
     , vector >=0.10.9 && <0.13
     , katip >=0.4 && < 0.6
   other-modules:
-      Paths_swagger_petstore
+      Paths_openapi_petstore
   exposed-modules:
       OpenAPIPetstore
       OpenAPIPetstore.API
@@ -81,7 +82,7 @@ test-suite tests
       tests
   ghc-options: -Wall -fno-warn-orphans
   build-depends:
-      swagger-petstore
+      openapi-petstore
     , QuickCheck
     , aeson
     , base >=4.7 && <5.0

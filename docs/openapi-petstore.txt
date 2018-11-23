@@ -4,7 +4,7 @@
 
 -- | Auto-generated openapi-petstore API Client
 --   
---   . Client library for calling the OpenAPI Petstore API based on
+--   Client library for calling the OpenAPI Petstore API based on
 --   http-client.
 --   
 --   host: petstore.swagger.io
@@ -13,11 +13,11 @@
 --   
 --   OpenAPI Petstore API version: 1.0.0
 --   
---   OpenAPI version: 3.0.0
+--   OpenAPI version: 3.0.1
 --   
 --   category: Web
 @package openapi-petstore
-@version 0.1.0.0
+@version 0.0.3.0
 
 
 -- | Katip Logging functions
@@ -100,111 +100,13 @@ mimeTypes :: MimeType mtype => Proxy mtype -> [MediaType]
 mimeType :: MimeType mtype => Proxy mtype -> Maybe MediaType
 mimeType' :: MimeType mtype => mtype -> Maybe MediaType
 mimeTypes' :: MimeType mtype => mtype -> [MediaType]
-
--- | <pre>
---   application/json; charset=utf-8
---   </pre>
-
--- | <pre>
---   application/xml; charset=utf-8
---   </pre>
-
--- | <pre>
---   application/x-www-form-urlencoded
---   </pre>
-
--- | <pre>
---   multipart/form-data
---   </pre>
-
--- | <pre>
---   text/plain; charset=utf-8
---   </pre>
-
--- | <pre>
---   application/octet-stream
---   </pre>
-
--- | <pre>
---   "*/*"
---   </pre>
 class MimeType mtype => MimeRender mtype x
 mimeRender :: MimeRender mtype x => Proxy mtype -> x -> ByteString
 mimeRender' :: MimeRender mtype x => mtype -> x -> ByteString
 mimeRenderDefaultMultipartFormData :: ToHttpApiData a => a -> ByteString
-
--- | <a>encode</a>
-
--- | <pre>
---   WH.urlEncodeAsForm
---   </pre>
-
--- | <pre>
---   P.id
---   </pre>
-
--- | <pre>
---   BL.fromStrict . T.encodeUtf8
---   </pre>
-
--- | <pre>
---   BCL.pack
---   </pre>
-
--- | <pre>
---   P.id
---   </pre>
-
--- | <pre>
---   BL.fromStrict . T.encodeUtf8
---   </pre>
-
--- | <pre>
---   BCL.pack
---   </pre>
-
--- | <pre>
---   P.Right . P.const NoContent
---   </pre>
 class MimeType mtype => MimeUnrender mtype o
 mimeUnrender :: MimeUnrender mtype o => Proxy mtype -> ByteString -> Either String o
 mimeUnrender' :: MimeUnrender mtype o => mtype -> ByteString -> Either String o
-
--- | <pre>
---   A.eitherDecode
---   </pre>
-
--- | <pre>
---   P.left T.unpack . WH.urlDecodeAsForm
---   </pre>
-
--- | <pre>
---   P.Right . P.id
---   </pre>
-
--- | <pre>
---   P.left P.show . TL.decodeUtf8'
---   </pre>
-
--- | <pre>
---   P.Right . BCL.unpack
---   </pre>
-
--- | <pre>
---   P.Right . P.id
---   </pre>
-
--- | <pre>
---   P.left P.show . T.decodeUtf8' . BL.toStrict
---   </pre>
-
--- | <pre>
---   P.Right . BCL.unpack
---   </pre>
-
--- | <pre>
---   P.Right . P.const NoContent
---   </pre>
 instance GHC.Classes.Eq OpenAPIPetstore.MimeTypes.NoContent
 instance GHC.Show.Show OpenAPIPetstore.MimeTypes.NoContent
 instance Data.Aeson.Types.FromJSON.FromJSON a => OpenAPIPetstore.MimeTypes.MimeUnrender OpenAPIPetstore.MimeTypes.MimeJSON a
@@ -245,6 +147,7 @@ instance OpenAPIPetstore.MimeTypes.MimeType OpenAPIPetstore.MimeTypes.MimeNoCont
 
 
 module OpenAPIPetstore.Core
+
 data OpenAPIPetstoreConfig
 OpenAPIPetstoreConfig :: ByteString -> Text -> LogExecWithContext -> LogContext -> [AnyAuthMethod] -> Bool -> OpenAPIPetstoreConfig
 
@@ -265,8 +168,6 @@ OpenAPIPetstoreConfig :: ByteString -> Text -> LogExecWithContext -> LogContext 
 
 -- | throw exceptions if auth methods are not configured
 [configValidateAuthMethods] :: OpenAPIPetstoreConfig -> Bool
-
--- | display the config
 
 -- | constructs a default OpenAPIPetstoreConfig
 --   
@@ -627,6 +528,9 @@ BodyBool :: Bool -> BodyBool
 newtype BodyText
 BodyText :: Text -> BodyText
 [unBodyText] :: BodyText -> Text
+newtype BooleanGroup
+BooleanGroup :: Bool -> BooleanGroup
+[unBooleanGroup] :: BooleanGroup -> Bool
 newtype Byte
 Byte :: ByteArray -> Byte
 [unByte] :: Byte -> ByteArray
@@ -657,15 +561,18 @@ EnumQueryString :: E'EnumFormString -> EnumQueryString
 newtype EnumQueryStringArray
 EnumQueryStringArray :: [E'EnumFormStringArray] -> EnumQueryStringArray
 [unEnumQueryStringArray] :: EnumQueryStringArray -> [E'EnumFormStringArray]
-newtype File
-File :: FilePath -> File
-[unFile] :: File -> FilePath
+newtype File2
+File2 :: FilePath -> File2
+[unFile2] :: File2 -> FilePath
 newtype Int32
 Int32 :: Int -> Int32
 [unInt32] :: Int32 -> Int
 newtype Int64
 Int64 :: Integer -> Int64
 [unInt64] :: Int64 -> Integer
+newtype Int64Group
+Int64Group :: Integer -> Int64Group
+[unInt64Group] :: Int64Group -> Integer
 newtype Name2
 Name2 :: Text -> Name2
 [unName2] :: Name2 -> Text
@@ -714,15 +621,33 @@ PatternWithoutDelimiter :: Text -> PatternWithoutDelimiter
 newtype PetId
 PetId :: Integer -> PetId
 [unPetId] :: PetId -> Integer
+newtype Query
+Query :: Text -> Query
+[unQuery] :: Query -> Text
 newtype RequestBody
 RequestBody :: (Map String Text) -> RequestBody
 [unRequestBody] :: RequestBody -> (Map String Text)
+newtype RequiredBooleanGroup
+RequiredBooleanGroup :: Bool -> RequiredBooleanGroup
+[unRequiredBooleanGroup] :: RequiredBooleanGroup -> Bool
+newtype RequiredFile
+RequiredFile :: FilePath -> RequiredFile
+[unRequiredFile] :: RequiredFile -> FilePath
+newtype RequiredInt64Group
+RequiredInt64Group :: Integer -> RequiredInt64Group
+[unRequiredInt64Group] :: RequiredInt64Group -> Integer
+newtype RequiredStringGroup
+RequiredStringGroup :: Int -> RequiredStringGroup
+[unRequiredStringGroup] :: RequiredStringGroup -> Int
 newtype Status
 Status :: [E'Status2] -> Status
 [unStatus] :: Status -> [E'Status2]
 newtype StatusText
 StatusText :: Text -> StatusText
 [unStatusText] :: StatusText -> Text
+newtype StringGroup
+StringGroup :: Int -> StringGroup
+[unStringGroup] :: StringGroup -> Int
 newtype Tags
 Tags :: [Text] -> Tags
 [unTags] :: Tags -> [Text]
@@ -743,10 +668,6 @@ AdditionalPropertiesClass :: !(Maybe (Map String Text)) -> !(Maybe (Map String (
 -- | "map_of_map_property"
 [additionalPropertiesClassMapOfMapProperty] :: AdditionalPropertiesClass -> !(Maybe (Map String (Map String Text)))
 
--- | FromJSON AdditionalPropertiesClass
-
--- | ToJSON AdditionalPropertiesClass
-
 -- | Construct a value of type <a>AdditionalPropertiesClass</a> (by
 --   applying it's required fields, if any)
 mkAdditionalPropertiesClass :: AdditionalPropertiesClass
@@ -761,10 +682,6 @@ Animal :: !(Text) -> !(Maybe Text) -> Animal
 -- | "color"
 [animalColor] :: Animal -> !(Maybe Text)
 
--- | FromJSON Animal
-
--- | ToJSON Animal
-
 -- | Construct a value of type <a>Animal</a> (by applying it's required
 --   fields, if any)
 mkAnimal :: Text -> Animal
@@ -772,10 +689,6 @@ mkAnimal :: Text -> Animal
 -- | AnimalFarm
 data AnimalFarm
 AnimalFarm :: AnimalFarm
-
--- | FromJSON AnimalFarm
-
--- | ToJSON AnimalFarm
 
 -- | Construct a value of type <a>AnimalFarm</a> (by applying it's required
 --   fields, if any)
@@ -794,10 +707,6 @@ ApiResponse :: !(Maybe Int) -> !(Maybe Text) -> !(Maybe Text) -> ApiResponse
 -- | "message"
 [apiResponseMessage] :: ApiResponse -> !(Maybe Text)
 
--- | FromJSON ApiResponse
-
--- | ToJSON ApiResponse
-
 -- | Construct a value of type <a>ApiResponse</a> (by applying it's
 --   required fields, if any)
 mkApiResponse :: ApiResponse
@@ -809,10 +718,6 @@ ArrayOfArrayOfNumberOnly :: !(Maybe [[Double]]) -> ArrayOfArrayOfNumberOnly
 -- | <a>ArrayArrayNumber</a>
 [arrayOfArrayOfNumberOnlyArrayArrayNumber] :: ArrayOfArrayOfNumberOnly -> !(Maybe [[Double]])
 
--- | FromJSON ArrayOfArrayOfNumberOnly
-
--- | ToJSON ArrayOfArrayOfNumberOnly
-
 -- | Construct a value of type <a>ArrayOfArrayOfNumberOnly</a> (by applying
 --   it's required fields, if any)
 mkArrayOfArrayOfNumberOnly :: ArrayOfArrayOfNumberOnly
@@ -823,10 +728,6 @@ ArrayOfNumberOnly :: !(Maybe [Double]) -> ArrayOfNumberOnly
 
 -- | <a>ArrayNumber</a>
 [arrayOfNumberOnlyArrayNumber] :: ArrayOfNumberOnly -> !(Maybe [Double])
-
--- | FromJSON ArrayOfNumberOnly
-
--- | ToJSON ArrayOfNumberOnly
 
 -- | Construct a value of type <a>ArrayOfNumberOnly</a> (by applying it's
 --   required fields, if any)
@@ -844,10 +745,6 @@ ArrayTest :: !(Maybe [Text]) -> !(Maybe [[Integer]]) -> !(Maybe [[ReadOnlyFirst]
 
 -- | "array_array_of_model"
 [arrayTestArrayArrayOfModel] :: ArrayTest -> !(Maybe [[ReadOnlyFirst]])
-
--- | FromJSON ArrayTest
-
--- | ToJSON ArrayTest
 
 -- | Construct a value of type <a>ArrayTest</a> (by applying it's required
 --   fields, if any)
@@ -875,10 +772,6 @@ Capitalization :: !(Maybe Text) -> !(Maybe Text) -> !(Maybe Text) -> !(Maybe Tex
 -- | <a>ATT_NAME</a> - Name of the pet
 [capitalizationAttName] :: Capitalization -> !(Maybe Text)
 
--- | FromJSON Capitalization
-
--- | ToJSON Capitalization
-
 -- | Construct a value of type <a>Capitalization</a> (by applying it's
 --   required fields, if any)
 mkCapitalization :: Capitalization
@@ -896,31 +789,23 @@ Cat :: !(Text) -> !(Maybe Text) -> !(Maybe Bool) -> Cat
 -- | "declawed"
 [catDeclawed] :: Cat -> !(Maybe Bool)
 
--- | FromJSON Cat
-
--- | ToJSON Cat
-
 -- | Construct a value of type <a>Cat</a> (by applying it's required
 --   fields, if any)
 mkCat :: Text -> Cat
 
 -- | Category
 data Category
-Category :: !(Maybe Integer) -> !(Maybe Text) -> Category
+Category :: !(Maybe Integer) -> !(Text) -> Category
 
 -- | "id"
 [categoryId] :: Category -> !(Maybe Integer)
 
--- | "name"
-[categoryName] :: Category -> !(Maybe Text)
-
--- | FromJSON Category
-
--- | ToJSON Category
+-- | <i>Required</i> "name"
+[categoryName] :: Category -> !(Text)
 
 -- | Construct a value of type <a>Category</a> (by applying it's required
 --   fields, if any)
-mkCategory :: Category
+mkCategory :: Text -> Category
 
 -- | ClassModel Model for testing model with "_class" property
 data ClassModel
@@ -928,10 +813,6 @@ ClassModel :: !(Maybe Text) -> ClassModel
 
 -- | "_class"
 [classModelClass] :: ClassModel -> !(Maybe Text)
-
--- | FromJSON ClassModel
-
--- | ToJSON ClassModel
 
 -- | Construct a value of type <a>ClassModel</a> (by applying it's required
 --   fields, if any)
@@ -943,10 +824,6 @@ Client :: !(Maybe Text) -> Client
 
 -- | "client"
 [clientClient] :: Client -> !(Maybe Text)
-
--- | FromJSON Client
-
--- | ToJSON Client
 
 -- | Construct a value of type <a>Client</a> (by applying it's required
 --   fields, if any)
@@ -965,10 +842,6 @@ Dog :: !(Text) -> !(Maybe Text) -> !(Maybe Text) -> Dog
 -- | "breed"
 [dogBreed] :: Dog -> !(Maybe Text)
 
--- | FromJSON Dog
-
--- | ToJSON Dog
-
 -- | Construct a value of type <a>Dog</a> (by applying it's required
 --   fields, if any)
 mkDog :: Text -> Dog
@@ -982,10 +855,6 @@ EnumArrays :: !(Maybe E'JustSymbol) -> !(Maybe [E'ArrayEnum]) -> EnumArrays
 
 -- | "array_enum"
 [enumArraysArrayEnum] :: EnumArrays -> !(Maybe [E'ArrayEnum])
-
--- | FromJSON EnumArrays
-
--- | ToJSON EnumArrays
 
 -- | Construct a value of type <a>EnumArrays</a> (by applying it's required
 --   fields, if any)
@@ -1010,13 +879,34 @@ EnumTest :: !(Maybe E'EnumString) -> !(E'EnumString) -> !(Maybe E'EnumInteger) -
 -- | "outerEnum"
 [enumTestOuterEnum] :: EnumTest -> !(Maybe OuterEnum)
 
--- | FromJSON EnumTest
-
--- | ToJSON EnumTest
-
 -- | Construct a value of type <a>EnumTest</a> (by applying it's required
 --   fields, if any)
 mkEnumTest :: E'EnumString -> EnumTest
+
+-- | File Must be named <a>File</a> for test.
+data File
+File :: !(Maybe Text) -> File
+
+-- | "sourceURI" - Test capitalization
+[fileSourceUri] :: File -> !(Maybe Text)
+
+-- | Construct a value of type <a>File</a> (by applying it's required
+--   fields, if any)
+mkFile :: File
+
+-- | FileSchemaTestClass
+data FileSchemaTestClass
+FileSchemaTestClass :: !(Maybe File) -> !(Maybe [File]) -> FileSchemaTestClass
+
+-- | "file"
+[fileSchemaTestClassFile] :: FileSchemaTestClass -> !(Maybe File)
+
+-- | "files"
+[fileSchemaTestClassFiles] :: FileSchemaTestClass -> !(Maybe [File])
+
+-- | Construct a value of type <a>FileSchemaTestClass</a> (by applying it's
+--   required fields, if any)
+mkFileSchemaTestClass :: FileSchemaTestClass
 
 -- | FormatTest
 data FormatTest
@@ -1061,10 +951,6 @@ FormatTest :: !(Maybe Int) -> !(Maybe Int) -> !(Maybe Integer) -> !(Double) -> !
 -- | <i>Required</i> "password"
 [formatTestPassword] :: FormatTest -> !(Text)
 
--- | FromJSON FormatTest
-
--- | ToJSON FormatTest
-
 -- | Construct a value of type <a>FormatTest</a> (by applying it's required
 --   fields, if any)
 mkFormatTest :: Double -> ByteArray -> Date -> Text -> FormatTest
@@ -1079,17 +965,13 @@ HasOnlyReadOnly :: !(Maybe Text) -> !(Maybe Text) -> HasOnlyReadOnly
 -- | "foo"
 [hasOnlyReadOnlyFoo] :: HasOnlyReadOnly -> !(Maybe Text)
 
--- | FromJSON HasOnlyReadOnly
-
--- | ToJSON HasOnlyReadOnly
-
 -- | Construct a value of type <a>HasOnlyReadOnly</a> (by applying it's
 --   required fields, if any)
 mkHasOnlyReadOnly :: HasOnlyReadOnly
 
 -- | MapTest
 data MapTest
-MapTest :: !(Maybe (Map String (Map String Text))) -> !(Maybe (Map String E'Inner)) -> MapTest
+MapTest :: !(Maybe (Map String (Map String Text))) -> !(Maybe (Map String E'Inner)) -> !(Maybe (Map String Bool)) -> !(Maybe (Map String Bool)) -> MapTest
 
 -- | "map_map_of_string"
 [mapTestMapMapOfString] :: MapTest -> !(Maybe (Map String (Map String Text)))
@@ -1097,9 +979,11 @@ MapTest :: !(Maybe (Map String (Map String Text))) -> !(Maybe (Map String E'Inne
 -- | "map_of_enum_string"
 [mapTestMapOfEnumString] :: MapTest -> !(Maybe (Map String E'Inner))
 
--- | FromJSON MapTest
+-- | "direct_map"
+[mapTestDirectMap] :: MapTest -> !(Maybe (Map String Bool))
 
--- | ToJSON MapTest
+-- | "indirect_map"
+[mapTestIndirectMap] :: MapTest -> !(Maybe (Map String Bool))
 
 -- | Construct a value of type <a>MapTest</a> (by applying it's required
 --   fields, if any)
@@ -1118,10 +1002,6 @@ MixedPropertiesAndAdditionalPropertiesClass :: !(Maybe Text) -> !(Maybe DateTime
 -- | "map"
 [mixedPropertiesAndAdditionalPropertiesClassMap] :: MixedPropertiesAndAdditionalPropertiesClass -> !(Maybe (Map String Animal))
 
--- | FromJSON MixedPropertiesAndAdditionalPropertiesClass
-
--- | ToJSON MixedPropertiesAndAdditionalPropertiesClass
-
 -- | Construct a value of type
 --   <a>MixedPropertiesAndAdditionalPropertiesClass</a> (by applying it's
 --   required fields, if any)
@@ -1137,10 +1017,6 @@ Model200Response :: !(Maybe Int) -> !(Maybe Text) -> Model200Response
 -- | "class"
 [model200ResponseClass] :: Model200Response -> !(Maybe Text)
 
--- | FromJSON Model200Response
-
--- | ToJSON Model200Response
-
 -- | Construct a value of type <a>Model200Response</a> (by applying it's
 --   required fields, if any)
 mkModel200Response :: Model200Response
@@ -1152,10 +1028,6 @@ ModelList :: !(Maybe Text) -> ModelList
 -- | "123-list"
 [modelList123list] :: ModelList -> !(Maybe Text)
 
--- | FromJSON ModelList
-
--- | ToJSON ModelList
-
 -- | Construct a value of type <a>ModelList</a> (by applying it's required
 --   fields, if any)
 mkModelList :: ModelList
@@ -1166,10 +1038,6 @@ ModelReturn :: !(Maybe Int) -> ModelReturn
 
 -- | "return"
 [modelReturnReturn] :: ModelReturn -> !(Maybe Int)
-
--- | FromJSON ModelReturn
-
--- | ToJSON ModelReturn
 
 -- | Construct a value of type <a>ModelReturn</a> (by applying it's
 --   required fields, if any)
@@ -1191,10 +1059,6 @@ Name :: !(Int) -> !(Maybe Int) -> !(Maybe Text) -> !(Maybe Int) -> Name
 -- | "123Number"
 [name123number] :: Name -> !(Maybe Int)
 
--- | FromJSON Name
-
--- | ToJSON Name
-
 -- | Construct a value of type <a>Name</a> (by applying it's required
 --   fields, if any)
 mkName :: Int -> Name
@@ -1205,10 +1069,6 @@ NumberOnly :: !(Maybe Double) -> NumberOnly
 
 -- | <a>JustNumber</a>
 [numberOnlyJustNumber] :: NumberOnly -> !(Maybe Double)
-
--- | FromJSON NumberOnly
-
--- | ToJSON NumberOnly
 
 -- | Construct a value of type <a>NumberOnly</a> (by applying it's required
 --   fields, if any)
@@ -1236,10 +1096,6 @@ Order :: !(Maybe Integer) -> !(Maybe Integer) -> !(Maybe Int) -> !(Maybe DateTim
 -- | "complete"
 [orderComplete] :: Order -> !(Maybe Bool)
 
--- | FromJSON Order
-
--- | ToJSON Order
-
 -- | Construct a value of type <a>Order</a> (by applying it's required
 --   fields, if any)
 mkOrder :: Order
@@ -1256,10 +1112,6 @@ OuterComposite :: !(Maybe Double) -> !(Maybe Text) -> !(Maybe Bool) -> OuterComp
 
 -- | "my_boolean"
 [outerCompositeMyBoolean] :: OuterComposite -> !(Maybe Bool)
-
--- | FromJSON OuterComposite
-
--- | ToJSON OuterComposite
 
 -- | Construct a value of type <a>OuterComposite</a> (by applying it's
 --   required fields, if any)
@@ -1287,10 +1139,6 @@ Pet :: !(Maybe Integer) -> !(Maybe Category) -> !(Text) -> !([Text]) -> !(Maybe 
 -- | "status" - pet status in the store
 [petStatus] :: Pet -> !(Maybe E'Status2)
 
--- | FromJSON Pet
-
--- | ToJSON Pet
-
 -- | Construct a value of type <a>Pet</a> (by applying it's required
 --   fields, if any)
 mkPet :: Text -> [Text] -> Pet
@@ -1305,10 +1153,6 @@ ReadOnlyFirst :: !(Maybe Text) -> !(Maybe Text) -> ReadOnlyFirst
 -- | "baz"
 [readOnlyFirstBaz] :: ReadOnlyFirst -> !(Maybe Text)
 
--- | FromJSON ReadOnlyFirst
-
--- | ToJSON ReadOnlyFirst
-
 -- | Construct a value of type <a>ReadOnlyFirst</a> (by applying it's
 --   required fields, if any)
 mkReadOnlyFirst :: ReadOnlyFirst
@@ -1320,13 +1164,17 @@ SpecialModelName :: !(Maybe Integer) -> SpecialModelName
 -- | "$special[property.name]"
 [specialModelNameSpecialPropertyName] :: SpecialModelName -> !(Maybe Integer)
 
--- | FromJSON SpecialModelName
-
--- | ToJSON SpecialModelName
-
 -- | Construct a value of type <a>SpecialModelName</a> (by applying it's
 --   required fields, if any)
 mkSpecialModelName :: SpecialModelName
+
+-- | StringBooleanMap
+data StringBooleanMap
+StringBooleanMap :: StringBooleanMap
+
+-- | Construct a value of type <a>StringBooleanMap</a> (by applying it's
+--   required fields, if any)
+mkStringBooleanMap :: StringBooleanMap
 
 -- | Tag
 data Tag
@@ -1337,10 +1185,6 @@ Tag :: !(Maybe Integer) -> !(Maybe Text) -> Tag
 
 -- | "name"
 [tagName] :: Tag -> !(Maybe Text)
-
--- | FromJSON Tag
-
--- | ToJSON Tag
 
 -- | Construct a value of type <a>Tag</a> (by applying it's required
 --   fields, if any)
@@ -1373,10 +1217,6 @@ User :: !(Maybe Integer) -> !(Maybe Text) -> !(Maybe Text) -> !(Maybe Text) -> !
 
 -- | "userStatus" - User Status
 [userUserStatus] :: User -> !(Maybe Int)
-
--- | FromJSON User
-
--- | ToJSON User
 
 -- | Construct a value of type <a>User</a> (by applying it's required
 --   fields, if any)
@@ -1782,6 +1622,8 @@ instance GHC.Classes.Eq OpenAPIPetstore.Model.User
 instance GHC.Show.Show OpenAPIPetstore.Model.User
 instance GHC.Classes.Eq OpenAPIPetstore.Model.Tag
 instance GHC.Show.Show OpenAPIPetstore.Model.Tag
+instance GHC.Classes.Eq OpenAPIPetstore.Model.StringBooleanMap
+instance GHC.Show.Show OpenAPIPetstore.Model.StringBooleanMap
 instance GHC.Classes.Eq OpenAPIPetstore.Model.SpecialModelName
 instance GHC.Show.Show OpenAPIPetstore.Model.SpecialModelName
 instance GHC.Classes.Eq OpenAPIPetstore.Model.ArrayTest
@@ -1806,6 +1648,10 @@ instance GHC.Classes.Eq OpenAPIPetstore.Model.HasOnlyReadOnly
 instance GHC.Show.Show OpenAPIPetstore.Model.HasOnlyReadOnly
 instance GHC.Classes.Eq OpenAPIPetstore.Model.FormatTest
 instance GHC.Show.Show OpenAPIPetstore.Model.FormatTest
+instance GHC.Classes.Eq OpenAPIPetstore.Model.FileSchemaTestClass
+instance GHC.Show.Show OpenAPIPetstore.Model.FileSchemaTestClass
+instance GHC.Classes.Eq OpenAPIPetstore.Model.File
+instance GHC.Show.Show OpenAPIPetstore.Model.File
 instance GHC.Classes.Eq OpenAPIPetstore.Model.Dog
 instance GHC.Show.Show OpenAPIPetstore.Model.Dog
 instance GHC.Classes.Eq OpenAPIPetstore.Model.Client
@@ -1834,11 +1680,23 @@ instance GHC.Show.Show OpenAPIPetstore.Model.Username
 instance GHC.Classes.Eq OpenAPIPetstore.Model.Username
 instance GHC.Show.Show OpenAPIPetstore.Model.Tags
 instance GHC.Classes.Eq OpenAPIPetstore.Model.Tags
+instance GHC.Show.Show OpenAPIPetstore.Model.StringGroup
+instance GHC.Classes.Eq OpenAPIPetstore.Model.StringGroup
 instance GHC.Show.Show OpenAPIPetstore.Model.StatusText
 instance GHC.Classes.Eq OpenAPIPetstore.Model.StatusText
+instance GHC.Show.Show OpenAPIPetstore.Model.RequiredStringGroup
+instance GHC.Classes.Eq OpenAPIPetstore.Model.RequiredStringGroup
+instance GHC.Show.Show OpenAPIPetstore.Model.RequiredInt64Group
+instance GHC.Classes.Eq OpenAPIPetstore.Model.RequiredInt64Group
+instance GHC.Show.Show OpenAPIPetstore.Model.RequiredFile
+instance GHC.Classes.Eq OpenAPIPetstore.Model.RequiredFile
+instance GHC.Show.Show OpenAPIPetstore.Model.RequiredBooleanGroup
+instance GHC.Classes.Eq OpenAPIPetstore.Model.RequiredBooleanGroup
 instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.RequestBody
 instance GHC.Show.Show OpenAPIPetstore.Model.RequestBody
 instance GHC.Classes.Eq OpenAPIPetstore.Model.RequestBody
+instance GHC.Show.Show OpenAPIPetstore.Model.Query
+instance GHC.Classes.Eq OpenAPIPetstore.Model.Query
 instance GHC.Show.Show OpenAPIPetstore.Model.PetId
 instance GHC.Classes.Eq OpenAPIPetstore.Model.PetId
 instance GHC.Show.Show OpenAPIPetstore.Model.PatternWithoutDelimiter
@@ -1871,16 +1729,20 @@ instance GHC.Show.Show OpenAPIPetstore.Model.Number
 instance GHC.Classes.Eq OpenAPIPetstore.Model.Number
 instance GHC.Show.Show OpenAPIPetstore.Model.Name2
 instance GHC.Classes.Eq OpenAPIPetstore.Model.Name2
+instance GHC.Show.Show OpenAPIPetstore.Model.Int64Group
+instance GHC.Classes.Eq OpenAPIPetstore.Model.Int64Group
 instance GHC.Show.Show OpenAPIPetstore.Model.Int64
 instance GHC.Classes.Eq OpenAPIPetstore.Model.Int64
 instance GHC.Show.Show OpenAPIPetstore.Model.Int32
 instance GHC.Classes.Eq OpenAPIPetstore.Model.Int32
-instance GHC.Show.Show OpenAPIPetstore.Model.File
-instance GHC.Classes.Eq OpenAPIPetstore.Model.File
+instance GHC.Show.Show OpenAPIPetstore.Model.File2
+instance GHC.Classes.Eq OpenAPIPetstore.Model.File2
 instance GHC.Show.Show OpenAPIPetstore.Model.Callback
 instance GHC.Classes.Eq OpenAPIPetstore.Model.Callback
 instance GHC.Show.Show OpenAPIPetstore.Model.Byte
 instance GHC.Classes.Eq OpenAPIPetstore.Model.Byte
+instance GHC.Show.Show OpenAPIPetstore.Model.BooleanGroup
+instance GHC.Classes.Eq OpenAPIPetstore.Model.BooleanGroup
 instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.BodyText
 instance GHC.Show.Show OpenAPIPetstore.Model.BodyText
 instance GHC.Classes.Eq OpenAPIPetstore.Model.BodyText
@@ -1977,6 +1839,8 @@ instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.User
 instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.User
 instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.Tag
 instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.Tag
+instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.StringBooleanMap
+instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.StringBooleanMap
 instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.SpecialModelName
 instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.SpecialModelName
 instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.ArrayTest
@@ -2001,6 +1865,10 @@ instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.HasOnlyReadOnl
 instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.HasOnlyReadOnly
 instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.FormatTest
 instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.FormatTest
+instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.FileSchemaTestClass
+instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.FileSchemaTestClass
+instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.File
+instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.File
 instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.Dog
 instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.Dog
 instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.Client
@@ -2036,42 +1904,24 @@ module OpenAPIPetstore.API.User
 --   Create user
 --   
 --   This can only be done by the logged in user.
-createUser :: (Consumes CreateUser MimeJSON, MimeRender MimeJSON User) => User -> OpenAPIPetstoreRequest CreateUser MimeJSON NoContent MimeNoContent
+createUser :: (Consumes CreateUser contentType, MimeRender contentType User) => ContentType contentType -> User -> OpenAPIPetstoreRequest CreateUser contentType NoContent MimeNoContent
 data CreateUser
-
--- | <i>Body Param</i> <a>User</a> - Created user object
-
--- | <pre>
---   application/json
---   </pre>
 
 -- | <pre>
 --   POST /user/createWithArray
 --   </pre>
 --   
 --   Creates list of users with given input array
-createUsersWithArrayInput :: (Consumes CreateUsersWithArrayInput MimeJSON, MimeRender MimeJSON User2) => User2 -> OpenAPIPetstoreRequest CreateUsersWithArrayInput MimeJSON NoContent MimeNoContent
+createUsersWithArrayInput :: (Consumes CreateUsersWithArrayInput contentType, MimeRender contentType User2) => ContentType contentType -> User2 -> OpenAPIPetstoreRequest CreateUsersWithArrayInput contentType NoContent MimeNoContent
 data CreateUsersWithArrayInput
-
--- | <i>Body Param</i> <a>User</a> - List of user object
-
--- | <pre>
---   application/json
---   </pre>
 
 -- | <pre>
 --   POST /user/createWithList
 --   </pre>
 --   
 --   Creates list of users with given input array
-createUsersWithListInput :: (Consumes CreateUsersWithListInput MimeJSON, MimeRender MimeJSON User2) => User2 -> OpenAPIPetstoreRequest CreateUsersWithListInput MimeJSON NoContent MimeNoContent
+createUsersWithListInput :: (Consumes CreateUsersWithListInput contentType, MimeRender contentType User2) => ContentType contentType -> User2 -> OpenAPIPetstoreRequest CreateUsersWithListInput contentType NoContent MimeNoContent
 data CreateUsersWithListInput
-
--- | <i>Body Param</i> <a>User</a> - List of user object
-
--- | <pre>
---   application/json
---   </pre>
 
 -- | <pre>
 --   DELETE /user/{username}
@@ -2092,28 +1942,12 @@ getUserByName :: Accept accept -> Username -> OpenAPIPetstoreRequest GetUserByNa
 data GetUserByName
 
 -- | <pre>
---   application/xml
---   </pre>
-
--- | <pre>
---   application/json
---   </pre>
-
--- | <pre>
 --   GET /user/login
 --   </pre>
 --   
 --   Logs user into the system
 loginUser :: Accept accept -> Username -> Password -> OpenAPIPetstoreRequest LoginUser MimeNoContent Text accept
 data LoginUser
-
--- | <pre>
---   application/xml
---   </pre>
-
--- | <pre>
---   application/json
---   </pre>
 
 -- | <pre>
 --   GET /user/logout
@@ -2130,16 +1964,9 @@ data LogoutUser
 --   Updated user
 --   
 --   This can only be done by the logged in user.
-updateUser :: (Consumes UpdateUser MimeJSON, MimeRender MimeJSON User) => User -> Username -> OpenAPIPetstoreRequest UpdateUser MimeJSON NoContent MimeNoContent
+updateUser :: (Consumes UpdateUser contentType, MimeRender contentType User) => ContentType contentType -> User -> Username -> OpenAPIPetstoreRequest UpdateUser contentType NoContent MimeNoContent
 data UpdateUser
-
--- | <i>Body Param</i> <a>User</a> - Updated user object
-
--- | <pre>
---   application/json
---   </pre>
 instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.User.UpdateUser OpenAPIPetstore.Model.User
-instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.User.UpdateUser OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.UpdateUser OpenAPIPetstore.MimeTypes.MimeNoContent
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.LogoutUser OpenAPIPetstore.MimeTypes.MimeNoContent
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.LoginUser OpenAPIPetstore.MimeTypes.MimeXML
@@ -2148,13 +1975,10 @@ instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.GetUserByNa
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.GetUserByName OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.DeleteUser OpenAPIPetstore.MimeTypes.MimeNoContent
 instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.User.CreateUsersWithListInput OpenAPIPetstore.Model.User2
-instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.User.CreateUsersWithListInput OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.CreateUsersWithListInput OpenAPIPetstore.MimeTypes.MimeNoContent
 instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.User.CreateUsersWithArrayInput OpenAPIPetstore.Model.User2
-instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.User.CreateUsersWithArrayInput OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.CreateUsersWithArrayInput OpenAPIPetstore.MimeTypes.MimeNoContent
 instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.User.CreateUser OpenAPIPetstore.Model.User
-instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.User.CreateUser OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.CreateUser OpenAPIPetstore.MimeTypes.MimeNoContent
 
 
@@ -2184,10 +2008,6 @@ getInventory :: OpenAPIPetstoreRequest GetInventory MimeNoContent ((Map String I
 data GetInventory
 
 -- | <pre>
---   application/json
---   </pre>
-
--- | <pre>
 --   GET /store/order/{order_id}
 --   </pre>
 --   
@@ -2199,36 +2019,13 @@ getOrderById :: Accept accept -> OrderId -> OpenAPIPetstoreRequest GetOrderById 
 data GetOrderById
 
 -- | <pre>
---   application/xml
---   </pre>
-
--- | <pre>
---   application/json
---   </pre>
-
--- | <pre>
 --   POST /store/order
 --   </pre>
 --   
 --   Place an order for a pet
-placeOrder :: (Consumes PlaceOrder MimeJSON, MimeRender MimeJSON Order) => Accept accept -> Order -> OpenAPIPetstoreRequest PlaceOrder MimeJSON Order accept
+placeOrder :: (Consumes PlaceOrder contentType, MimeRender contentType Order) => ContentType contentType -> Accept accept -> Order -> OpenAPIPetstoreRequest PlaceOrder contentType Order accept
 data PlaceOrder
-
--- | <i>Body Param</i> <a>Order</a> - order placed for purchasing the pet
-
--- | <pre>
---   application/json
---   </pre>
-
--- | <pre>
---   application/xml
---   </pre>
-
--- | <pre>
---   application/json
---   </pre>
 instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Store.PlaceOrder OpenAPIPetstore.Model.Order
-instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Store.PlaceOrder OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Store.PlaceOrder OpenAPIPetstore.MimeTypes.MimeXML
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Store.PlaceOrder OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Store.GetOrderById OpenAPIPetstore.MimeTypes.MimeXML
@@ -2248,17 +2045,6 @@ module OpenAPIPetstore.API.Pet
 --   AuthMethod: <a>AuthOAuthPetstoreAuth</a>
 addPet :: (Consumes AddPet contentType, MimeRender contentType Pet) => ContentType contentType -> Pet -> OpenAPIPetstoreRequest AddPet contentType NoContent MimeNoContent
 data AddPet
-
--- | <i>Body Param</i> <a>Pet</a> - Pet object that needs to be added to
---   the store
-
--- | <pre>
---   application/xml
---   </pre>
-
--- | <pre>
---   application/json
---   </pre>
 
 -- | <pre>
 --   DELETE /pet/{petId}
@@ -2283,14 +2069,6 @@ findPetsByStatus :: Accept accept -> Status -> OpenAPIPetstoreRequest FindPetsBy
 data FindPetsByStatus
 
 -- | <pre>
---   application/xml
---   </pre>
-
--- | <pre>
---   application/json
---   </pre>
-
--- | <pre>
 --   GET /pet/findByTags
 --   </pre>
 --   
@@ -2306,14 +2084,6 @@ findPetsByTags :: Accept accept -> Tags -> OpenAPIPetstoreRequest FindPetsByTags
 data FindPetsByTags
 
 -- | <pre>
---   application/xml
---   </pre>
-
--- | <pre>
---   application/json
---   </pre>
-
--- | <pre>
 --   GET /pet/{petId}
 --   </pre>
 --   
@@ -2326,14 +2096,6 @@ getPetById :: Accept accept -> PetId -> OpenAPIPetstoreRequest GetPetById MimeNo
 data GetPetById
 
 -- | <pre>
---   application/xml
---   </pre>
-
--- | <pre>
---   application/json
---   </pre>
-
--- | <pre>
 --   PUT /pet
 --   </pre>
 --   
@@ -2342,17 +2104,6 @@ data GetPetById
 --   AuthMethod: <a>AuthOAuthPetstoreAuth</a>
 updatePet :: (Consumes UpdatePet contentType, MimeRender contentType Pet) => ContentType contentType -> Pet -> OpenAPIPetstoreRequest UpdatePet contentType NoContent MimeNoContent
 data UpdatePet
-
--- | <i>Body Param</i> <a>Pet</a> - Pet object that needs to be added to
---   the store
-
--- | <pre>
---   application/xml
---   </pre>
-
--- | <pre>
---   application/json
---   </pre>
 
 -- | <pre>
 --   POST /pet/{petId}
@@ -2364,14 +2115,6 @@ data UpdatePet
 updatePetWithForm :: (Consumes UpdatePetWithForm MimeFormUrlEncoded) => PetId -> OpenAPIPetstoreRequest UpdatePetWithForm MimeFormUrlEncoded NoContent MimeNoContent
 data UpdatePetWithForm
 
--- | <i>Optional Param</i> "name" - Updated name of the pet
-
--- | <i>Optional Param</i> "status" - Updated status of the pet
-
--- | <pre>
---   application/x-www-form-urlencoded
---   </pre>
-
 -- | <pre>
 --   POST /pet/{petId}/uploadImage
 --   </pre>
@@ -2382,20 +2125,20 @@ data UpdatePetWithForm
 uploadFile :: (Consumes UploadFile MimeMultipartFormData) => PetId -> OpenAPIPetstoreRequest UploadFile MimeMultipartFormData ApiResponse MimeJSON
 data UploadFile
 
--- | <i>Optional Param</i> "additionalMetadata" - Additional data to pass
---   to server
-
--- | <i>Optional Param</i> "file" - file to upload
-
 -- | <pre>
---   multipart/form-data
+--   POST /fake/{petId}/uploadImageWithRequiredFile
 --   </pre>
-
--- | <pre>
---   application/json
---   </pre>
+--   
+--   uploads an image (required)
+--   
+--   AuthMethod: <a>AuthOAuthPetstoreAuth</a>
+uploadFileWithRequiredFile :: (Consumes UploadFileWithRequiredFile MimeMultipartFormData) => RequiredFile -> PetId -> OpenAPIPetstoreRequest UploadFileWithRequiredFile MimeMultipartFormData ApiResponse MimeJSON
+data UploadFileWithRequiredFile
+instance OpenAPIPetstore.Core.HasOptionalParam OpenAPIPetstore.API.Pet.UploadFileWithRequiredFile OpenAPIPetstore.Model.AdditionalMetadata
+instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Pet.UploadFileWithRequiredFile OpenAPIPetstore.MimeTypes.MimeMultipartFormData
+instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Pet.UploadFileWithRequiredFile OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.Core.HasOptionalParam OpenAPIPetstore.API.Pet.UploadFile OpenAPIPetstore.Model.AdditionalMetadata
-instance OpenAPIPetstore.Core.HasOptionalParam OpenAPIPetstore.API.Pet.UploadFile OpenAPIPetstore.Model.File
+instance OpenAPIPetstore.Core.HasOptionalParam OpenAPIPetstore.API.Pet.UploadFile OpenAPIPetstore.Model.File2
 instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Pet.UploadFile OpenAPIPetstore.MimeTypes.MimeMultipartFormData
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Pet.UploadFile OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.Core.HasOptionalParam OpenAPIPetstore.API.Pet.UpdatePetWithForm OpenAPIPetstore.Model.Name2
@@ -2433,16 +2176,6 @@ module OpenAPIPetstore.API.FakeClassnameTags123
 --   AuthMethod: <a>AuthApiKeyApiKeyQuery</a>
 testClassname :: (Consumes TestClassname MimeJSON, MimeRender MimeJSON Client) => Client -> OpenAPIPetstoreRequest TestClassname MimeJSON Client MimeJSON
 data TestClassname
-
--- | <i>Body Param</i> <a>Client</a> - client model
-
--- | <pre>
---   application/json
---   </pre>
-
--- | <pre>
---   application/json
---   </pre>
 instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.FakeClassnameTags123.TestClassname OpenAPIPetstore.Model.Client
 instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.FakeClassnameTags123.TestClassname OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.FakeClassnameTags123.TestClassname OpenAPIPetstore.MimeTypes.MimeJSON
@@ -2455,72 +2188,47 @@ module OpenAPIPetstore.API.Fake
 --   </pre>
 --   
 --   Test serialization of outer boolean types
-fakeOuterBooleanSerialize :: (Consumes FakeOuterBooleanSerialize MimeJSON) => Accept accept -> OpenAPIPetstoreRequest FakeOuterBooleanSerialize MimeJSON Bool accept
+fakeOuterBooleanSerialize :: (Consumes FakeOuterBooleanSerialize contentType) => ContentType contentType -> Accept accept -> OpenAPIPetstoreRequest FakeOuterBooleanSerialize contentType Bool accept
 data FakeOuterBooleanSerialize
-
--- | <i>Body Param</i> "body" - Input boolean as post body
-
--- | <pre>
---   application/json
---   </pre>
-
--- | <pre>
---   */*
---   </pre>
 
 -- | <pre>
 --   POST /fake/outer/composite
 --   </pre>
 --   
 --   Test serialization of object with outer number type
-fakeOuterCompositeSerialize :: (Consumes FakeOuterCompositeSerialize MimeJSON) => Accept accept -> OpenAPIPetstoreRequest FakeOuterCompositeSerialize MimeJSON OuterComposite accept
+fakeOuterCompositeSerialize :: (Consumes FakeOuterCompositeSerialize contentType) => ContentType contentType -> Accept accept -> OpenAPIPetstoreRequest FakeOuterCompositeSerialize contentType OuterComposite accept
 data FakeOuterCompositeSerialize
-
--- | <i>Body Param</i> <a>OuterComposite</a> - Input composite as post body
-
--- | <pre>
---   application/json
---   </pre>
-
--- | <pre>
---   */*
---   </pre>
 
 -- | <pre>
 --   POST /fake/outer/number
 --   </pre>
 --   
 --   Test serialization of outer number types
-fakeOuterNumberSerialize :: (Consumes FakeOuterNumberSerialize MimeJSON) => Accept accept -> OpenAPIPetstoreRequest FakeOuterNumberSerialize MimeJSON Double accept
+fakeOuterNumberSerialize :: (Consumes FakeOuterNumberSerialize contentType) => ContentType contentType -> Accept accept -> OpenAPIPetstoreRequest FakeOuterNumberSerialize contentType Double accept
 data FakeOuterNumberSerialize
-
--- | <i>Body Param</i> "body" - Input number as post body
-
--- | <pre>
---   application/json
---   </pre>
-
--- | <pre>
---   */*
---   </pre>
 
 -- | <pre>
 --   POST /fake/outer/string
 --   </pre>
 --   
 --   Test serialization of outer string types
-fakeOuterStringSerialize :: (Consumes FakeOuterStringSerialize MimeJSON) => Accept accept -> OpenAPIPetstoreRequest FakeOuterStringSerialize MimeJSON Text accept
+fakeOuterStringSerialize :: (Consumes FakeOuterStringSerialize contentType) => ContentType contentType -> Accept accept -> OpenAPIPetstoreRequest FakeOuterStringSerialize contentType Text accept
 data FakeOuterStringSerialize
 
--- | <i>Body Param</i> "body" - Input string as post body
+-- | <pre>
+--   PUT /fake/body-with-file-schema
+--   </pre>
+--   
+--   For this test, the body for this request much reference a schema named
+--   <a>File</a>.
+testBodyWithFileSchema :: (Consumes TestBodyWithFileSchema MimeJSON, MimeRender MimeJSON FileSchemaTestClass) => FileSchemaTestClass -> OpenAPIPetstoreRequest TestBodyWithFileSchema MimeJSON NoContent MimeNoContent
+data TestBodyWithFileSchema
 
 -- | <pre>
---   application/json
+--   PUT /fake/body-with-query-params
 --   </pre>
-
--- | <pre>
---   */*
---   </pre>
+testBodyWithQueryParams :: (Consumes TestBodyWithQueryParams MimeJSON, MimeRender MimeJSON User) => User -> Query -> OpenAPIPetstoreRequest TestBodyWithQueryParams MimeJSON NoContent MimeNoContent
+data TestBodyWithQueryParams
 
 -- | <pre>
 --   PATCH /fake
@@ -2531,16 +2239,6 @@ data FakeOuterStringSerialize
 --   To test "client" model
 testClientModel :: (Consumes TestClientModel MimeJSON, MimeRender MimeJSON Client) => Client -> OpenAPIPetstoreRequest TestClientModel MimeJSON Client MimeJSON
 data TestClientModel
-
--- | <i>Body Param</i> <a>Client</a> - client model
-
--- | <pre>
---   application/json
---   </pre>
-
--- | <pre>
---   application/json
---   </pre>
 
 -- | <pre>
 --   POST /fake
@@ -2554,30 +2252,6 @@ data TestClientModel
 testEndpointParameters :: (Consumes TestEndpointParameters MimeFormUrlEncoded) => Number -> ParamDouble -> PatternWithoutDelimiter -> Byte -> OpenAPIPetstoreRequest TestEndpointParameters MimeFormUrlEncoded NoContent MimeNoContent
 data TestEndpointParameters
 
--- | <i>Optional Param</i> "integer" - None
-
--- | <i>Optional Param</i> "int32" - None
-
--- | <i>Optional Param</i> "int64" - None
-
--- | <i>Optional Param</i> "float" - None
-
--- | <i>Optional Param</i> "string" - None
-
--- | <i>Optional Param</i> "binary" - None
-
--- | <i>Optional Param</i> "date" - None
-
--- | <i>Optional Param</i> "dateTime" - None
-
--- | <i>Optional Param</i> "password" - None
-
--- | <i>Optional Param</i> "callback" - None
-
--- | <pre>
---   application/x-www-form-urlencoded
---   </pre>
-
 -- | <pre>
 --   GET /fake
 --   </pre>
@@ -2588,33 +2262,15 @@ data TestEndpointParameters
 testEnumParameters :: (Consumes TestEnumParameters MimeFormUrlEncoded) => OpenAPIPetstoreRequest TestEnumParameters MimeFormUrlEncoded NoContent MimeNoContent
 data TestEnumParameters
 
--- | <i>Optional Param</i> "enum_form_string_array" - Form parameter enum
---   test (string array)
-
--- | <i>Optional Param</i> "enum_form_string" - Form parameter enum test
---   (string)
-
--- | <i>Optional Param</i> "enum_header_string_array" - Header parameter
---   enum test (string array)
-
--- | <i>Optional Param</i> "enum_header_string" - Header parameter enum
---   test (string)
-
--- | <i>Optional Param</i> "enum_query_string_array" - Query parameter enum
---   test (string array)
-
--- | <i>Optional Param</i> "enum_query_string" - Query parameter enum test
---   (string)
-
--- | <i>Optional Param</i> "enum_query_integer" - Query parameter enum test
---   (double)
-
--- | <i>Optional Param</i> "enum_query_double" - Query parameter enum test
---   (double)
-
 -- | <pre>
---   application/x-www-form-urlencoded
+--   DELETE /fake
 --   </pre>
+--   
+--   Fake endpoint to test group parameters (optional)
+--   
+--   Fake endpoint to test group parameters (optional)
+testGroupParameters :: RequiredStringGroup -> RequiredBooleanGroup -> RequiredInt64Group -> OpenAPIPetstoreRequest TestGroupParameters MimeNoContent NoContent MimeNoContent
+data TestGroupParameters
 
 -- | <pre>
 --   POST /fake/inline-additionalProperties
@@ -2624,12 +2280,6 @@ data TestEnumParameters
 testInlineAdditionalProperties :: (Consumes TestInlineAdditionalProperties MimeJSON, MimeRender MimeJSON RequestBody) => RequestBody -> OpenAPIPetstoreRequest TestInlineAdditionalProperties MimeJSON NoContent MimeNoContent
 data TestInlineAdditionalProperties
 
--- | <i>Body Param</i> "request_body" - request body
-
--- | <pre>
---   application/json
---   </pre>
-
 -- | <pre>
 --   GET /fake/jsonFormData
 --   </pre>
@@ -2637,15 +2287,15 @@ data TestInlineAdditionalProperties
 --   test json serialization of form data
 testJsonFormData :: (Consumes TestJsonFormData MimeFormUrlEncoded) => Param -> Param2 -> OpenAPIPetstoreRequest TestJsonFormData MimeFormUrlEncoded NoContent MimeNoContent
 data TestJsonFormData
-
--- | <pre>
---   application/x-www-form-urlencoded
---   </pre>
 instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.TestJsonFormData OpenAPIPetstore.MimeTypes.MimeFormUrlEncoded
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.TestJsonFormData OpenAPIPetstore.MimeTypes.MimeNoContent
 instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Fake.TestInlineAdditionalProperties OpenAPIPetstore.Model.RequestBody
 instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.TestInlineAdditionalProperties OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.TestInlineAdditionalProperties OpenAPIPetstore.MimeTypes.MimeNoContent
+instance OpenAPIPetstore.Core.HasOptionalParam OpenAPIPetstore.API.Fake.TestGroupParameters OpenAPIPetstore.Model.StringGroup
+instance OpenAPIPetstore.Core.HasOptionalParam OpenAPIPetstore.API.Fake.TestGroupParameters OpenAPIPetstore.Model.BooleanGroup
+instance OpenAPIPetstore.Core.HasOptionalParam OpenAPIPetstore.API.Fake.TestGroupParameters OpenAPIPetstore.Model.Int64Group
+instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.TestGroupParameters OpenAPIPetstore.MimeTypes.MimeNoContent
 instance OpenAPIPetstore.Core.HasOptionalParam OpenAPIPetstore.API.Fake.TestEnumParameters OpenAPIPetstore.Model.EnumFormStringArray
 instance OpenAPIPetstore.Core.HasOptionalParam OpenAPIPetstore.API.Fake.TestEnumParameters OpenAPIPetstore.Model.EnumFormString
 instance OpenAPIPetstore.Core.HasOptionalParam OpenAPIPetstore.API.Fake.TestEnumParameters OpenAPIPetstore.Model.EnumHeaderStringArray
@@ -2671,17 +2321,19 @@ instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.TestEndpoin
 instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Fake.TestClientModel OpenAPIPetstore.Model.Client
 instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.TestClientModel OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.TestClientModel OpenAPIPetstore.MimeTypes.MimeJSON
+instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Fake.TestBodyWithQueryParams OpenAPIPetstore.Model.User
+instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.TestBodyWithQueryParams OpenAPIPetstore.MimeTypes.MimeJSON
+instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.TestBodyWithQueryParams OpenAPIPetstore.MimeTypes.MimeNoContent
+instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Fake.TestBodyWithFileSchema OpenAPIPetstore.Model.FileSchemaTestClass
+instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.TestBodyWithFileSchema OpenAPIPetstore.MimeTypes.MimeJSON
+instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.TestBodyWithFileSchema OpenAPIPetstore.MimeTypes.MimeNoContent
 instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Fake.FakeOuterStringSerialize OpenAPIPetstore.Model.BodyText
-instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.FakeOuterStringSerialize OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.MimeTypes.MimeType mtype => OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.FakeOuterStringSerialize mtype
 instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Fake.FakeOuterNumberSerialize OpenAPIPetstore.Model.Body
-instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.FakeOuterNumberSerialize OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.MimeTypes.MimeType mtype => OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.FakeOuterNumberSerialize mtype
 instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Fake.FakeOuterCompositeSerialize OpenAPIPetstore.Model.OuterComposite
-instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.FakeOuterCompositeSerialize OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.MimeTypes.MimeType mtype => OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.FakeOuterCompositeSerialize mtype
 instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Fake.FakeOuterBooleanSerialize OpenAPIPetstore.Model.BodyBool
-instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.FakeOuterBooleanSerialize OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.MimeTypes.MimeType mtype => OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.FakeOuterBooleanSerialize mtype
 
 
@@ -2693,22 +2345,12 @@ module OpenAPIPetstore.API.AnotherFake
 --   
 --   To test special tags
 --   
---   To test special tags
-testSpecialTags :: (Consumes TestSpecialTags MimeJSON, MimeRender MimeJSON Client) => Client -> OpenAPIPetstoreRequest TestSpecialTags MimeJSON Client MimeJSON
-data TestSpecialTags
-
--- | <i>Body Param</i> <a>Client</a> - client model
-
--- | <pre>
---   application/json
---   </pre>
-
--- | <pre>
---   application/json
---   </pre>
-instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.AnotherFake.TestSpecialTags OpenAPIPetstore.Model.Client
-instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.AnotherFake.TestSpecialTags OpenAPIPetstore.MimeTypes.MimeJSON
-instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.AnotherFake.TestSpecialTags OpenAPIPetstore.MimeTypes.MimeJSON
+--   To test special tags and operation ID starting with number
+op123testSpecialTags :: (Consumes Op123testSpecialTags MimeJSON, MimeRender MimeJSON Client) => Client -> OpenAPIPetstoreRequest Op123testSpecialTags MimeJSON Client MimeJSON
+data Op123testSpecialTags
+instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.AnotherFake.Op123testSpecialTags OpenAPIPetstore.Model.Client
+instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.AnotherFake.Op123testSpecialTags OpenAPIPetstore.MimeTypes.MimeJSON
+instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.AnotherFake.Op123testSpecialTags OpenAPIPetstore.MimeTypes.MimeJSON
 
 
 module OpenAPIPetstore.API
@@ -2783,7 +2425,7 @@ catDeclawedL :: Lens_' Cat (Maybe Bool)
 categoryIdL :: Lens_' Category (Maybe Integer)
 
 -- | <a>categoryName</a> Lens
-categoryNameL :: Lens_' Category (Maybe Text)
+categoryNameL :: Lens_' Category (Text)
 
 -- | <a>classModelClass</a> Lens
 classModelClassL :: Lens_' ClassModel (Maybe Text)
@@ -2820,6 +2462,15 @@ enumTestEnumNumberL :: Lens_' EnumTest (Maybe E'EnumNumber)
 
 -- | <a>enumTestOuterEnum</a> Lens
 enumTestOuterEnumL :: Lens_' EnumTest (Maybe OuterEnum)
+
+-- | <a>fileSourceUri</a> Lens
+fileSourceUriL :: Lens_' File (Maybe Text)
+
+-- | <a>fileSchemaTestClassFile</a> Lens
+fileSchemaTestClassFileL :: Lens_' FileSchemaTestClass (Maybe File)
+
+-- | <a>fileSchemaTestClassFiles</a> Lens
+fileSchemaTestClassFilesL :: Lens_' FileSchemaTestClass (Maybe [File])
 
 -- | <a>formatTestInteger</a> Lens
 formatTestIntegerL :: Lens_' FormatTest (Maybe Int)
@@ -2871,6 +2522,12 @@ mapTestMapMapOfStringL :: Lens_' MapTest (Maybe (Map String (Map String Text)))
 
 -- | <a>mapTestMapOfEnumString</a> Lens
 mapTestMapOfEnumStringL :: Lens_' MapTest (Maybe (Map String E'Inner))
+
+-- | <a>mapTestDirectMap</a> Lens
+mapTestDirectMapL :: Lens_' MapTest (Maybe (Map String Bool))
+
+-- | <a>mapTestIndirectMap</a> Lens
+mapTestIndirectMapL :: Lens_' MapTest (Maybe (Map String Bool))
 
 -- | <a>mixedPropertiesAndAdditionalPropertiesClassUuid</a> Lens
 mixedPropertiesAndAdditionalPropertiesClassUuidL :: Lens_' MixedPropertiesAndAdditionalPropertiesClass (Maybe Text)
