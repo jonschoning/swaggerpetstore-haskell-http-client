@@ -17,53 +17,62 @@
 --   
 --   category: Web
 @package openapi-petstore
-@version 0.0.3.0
+@version 0.1.0.0
 
 
--- | Katip Logging functions
+-- | Logging functions
 module OpenAPIPetstore.Logging
 
--- | Runs a Katip logging block with the Log environment
+-- | Runs a monad-logger block with the filter predicate
 type LogExecWithContext = forall m. MonadIO m => LogContext -> LogExec m
 
--- | A Katip logging block
-type LogExec m = forall a. KatipT m a -> m a
+-- | A monad-logger block
+type LogExec m = forall a. LoggingT m a -> m a
 
--- | A Katip Log environment
-type LogContext = LogEnv
+-- | A monad-logger filter predicate
+type LogContext = LogSource -> LogLevel -> Bool
 
--- | A Katip Log severity
-type LogLevel = Severity
+-- | A monad-logger log level
+type LogLevel = LogLevel
 
 -- | the default log environment
 initLogContext :: IO LogContext
 
--- | Runs a Katip logging block with the Log environment
+-- | Runs a monad-logger block with the filter predicate
 runDefaultLogExecWithContext :: LogExecWithContext
 
--- | Runs a Katip logging block with the Log environment
+-- | Runs a monad-logger block targeting stdout, with the filter predicate
 stdoutLoggingExec :: LogExecWithContext
 
--- | A Katip Log environment which targets stdout
+-- | <pre>
+--   pure
+--   </pre>
 stdoutLoggingContext :: LogContext -> IO LogContext
 
--- | Runs a Katip logging block with the Log environment
+-- | Runs a monad-logger block targeting stderr, with the filter predicate
 stderrLoggingExec :: LogExecWithContext
 
--- | A Katip Log environment which targets stderr
+-- | <pre>
+--   pure
+--   </pre>
 stderrLoggingContext :: LogContext -> IO LogContext
 
--- | Disables Katip logging
+-- | Disables monad-logger logging
 runNullLogExec :: LogExecWithContext
 
--- | Log a katip message
-_log :: (Applicative m, Katip m) => Text -> LogLevel -> Text -> m ()
+-- | monad-logger which does nothing
+nullLogger :: Loc -> LogSource -> LogLevel -> LogStr -> IO ()
+
+-- | Log a message using the current time
+_log :: (MonadIO m, MonadLogger m) => Text -> LogLevel -> Text -> m ()
 
 -- | re-throws exceptions after logging them
-logExceptions :: (Katip m, MonadCatch m, Applicative m) => Text -> m a -> m a
+logExceptions :: (MonadLogger m, MonadCatch m, MonadIO m) => Text -> m a -> m a
 levelInfo :: LogLevel
 levelError :: LogLevel
 levelDebug :: LogLevel
+minLevelFilter :: LogLevel -> LogSource -> LogLevel -> Bool
+infoLevelFilter :: LogSource -> LogLevel -> Bool
 
 
 module OpenAPIPetstore.MimeTypes
@@ -107,8 +116,23 @@ mimeRenderDefaultMultipartFormData :: ToHttpApiData a => a -> ByteString
 class MimeType mtype => MimeUnrender mtype o
 mimeUnrender :: MimeUnrender mtype o => Proxy mtype -> ByteString -> Either String o
 mimeUnrender' :: MimeUnrender mtype o => mtype -> ByteString -> Either String o
+data MimeXmlCharsetutf16
+MimeXmlCharsetutf16 :: MimeXmlCharsetutf16
+data MimeXmlCharsetutf8
+MimeXmlCharsetutf8 :: MimeXmlCharsetutf8
+data MimeTextxml
+MimeTextxml :: MimeTextxml
+data MimeTextxmlCharsetutf16
+MimeTextxmlCharsetutf16 :: MimeTextxmlCharsetutf16
+data MimeTextxmlCharsetutf8
+MimeTextxmlCharsetutf8 :: MimeTextxmlCharsetutf8
 instance GHC.Classes.Eq OpenAPIPetstore.MimeTypes.NoContent
 instance GHC.Show.Show OpenAPIPetstore.MimeTypes.NoContent
+instance OpenAPIPetstore.MimeTypes.MimeType OpenAPIPetstore.MimeTypes.MimeTextxmlCharsetutf8
+instance OpenAPIPetstore.MimeTypes.MimeType OpenAPIPetstore.MimeTypes.MimeTextxmlCharsetutf16
+instance OpenAPIPetstore.MimeTypes.MimeType OpenAPIPetstore.MimeTypes.MimeTextxml
+instance OpenAPIPetstore.MimeTypes.MimeType OpenAPIPetstore.MimeTypes.MimeXmlCharsetutf8
+instance OpenAPIPetstore.MimeTypes.MimeType OpenAPIPetstore.MimeTypes.MimeXmlCharsetutf16
 instance Data.Aeson.Types.FromJSON.FromJSON a => OpenAPIPetstore.MimeTypes.MimeUnrender OpenAPIPetstore.MimeTypes.MimeJSON a
 instance Web.Internal.FormUrlEncoded.FromForm a => OpenAPIPetstore.MimeTypes.MimeUnrender OpenAPIPetstore.MimeTypes.MimeFormUrlEncoded a
 instance OpenAPIPetstore.MimeTypes.MimeUnrender OpenAPIPetstore.MimeTypes.MimePlainText Data.ByteString.Lazy.Internal.ByteString
@@ -245,6 +269,7 @@ applyOptionalParam :: HasOptionalParam req param => OpenAPIPetstoreRequest req c
 
 -- | infix operator / alias for <tt>addOptionalParam</tt>
 (-&-) :: HasOptionalParam req param => OpenAPIPetstoreRequest req contentType res accept -> param -> OpenAPIPetstoreRequest req contentType res accept
+infixl 2 -&-
 
 -- | Request Params
 data Params
@@ -438,7 +463,7 @@ instance Web.Internal.HttpApiData.FromHttpApiData OpenAPIPetstore.Core.DateTime
 instance Web.Internal.HttpApiData.ToHttpApiData OpenAPIPetstore.Core.DateTime
 instance GHC.Show.Show OpenAPIPetstore.Core.DateTime
 instance OpenAPIPetstore.MimeTypes.MimeRender OpenAPIPetstore.MimeTypes.MimeMultipartFormData OpenAPIPetstore.Core.DateTime
-instance GHC.Exception.Exception OpenAPIPetstore.Core.AuthMethodException
+instance GHC.Exception.Type.Exception OpenAPIPetstore.Core.AuthMethodException
 instance GHC.Show.Show OpenAPIPetstore.Core.OpenAPIPetstoreConfig
 instance OpenAPIPetstore.Core.AuthMethod OpenAPIPetstore.Core.AnyAuthMethod
 
@@ -520,11 +545,14 @@ newtype ApiKey
 ApiKey :: Text -> ApiKey
 [unApiKey] :: ApiKey -> Text
 newtype Body
-Body :: Double -> Body
-[unBody] :: Body -> Double
+Body :: [User] -> Body
+[unBody] :: Body -> [User]
 newtype BodyBool
 BodyBool :: Bool -> BodyBool
 [unBodyBool] :: BodyBool -> Bool
+newtype BodyDouble
+BodyDouble :: Double -> BodyDouble
+[unBodyDouble] :: BodyDouble -> Double
 newtype BodyText
 BodyText :: Text -> BodyText
 [unBodyText] :: BodyText -> Text
@@ -609,6 +637,9 @@ ParamFloat :: Float -> ParamFloat
 newtype ParamInteger
 ParamInteger :: Int -> ParamInteger
 [unParamInteger] :: ParamInteger -> Int
+newtype ParamMapMapStringText
+ParamMapMapStringText :: Map String Text -> ParamMapMapStringText
+[unParamMapMapStringText] :: ParamMapMapStringText -> Map String Text
 newtype ParamString
 ParamString :: Text -> ParamString
 [unParamString] :: ParamString -> Text
@@ -624,9 +655,6 @@ PetId :: Integer -> PetId
 newtype Query
 Query :: Text -> Query
 [unQuery] :: Query -> Text
-newtype RequestBody
-RequestBody :: (Map String Text) -> RequestBody
-[unRequestBody] :: RequestBody -> (Map String Text)
 newtype RequiredBooleanGroup
 RequiredBooleanGroup :: Bool -> RequiredBooleanGroup
 [unRequiredBooleanGroup] :: RequiredBooleanGroup -> Bool
@@ -651,22 +679,19 @@ StringGroup :: Int -> StringGroup
 newtype Tags
 Tags :: [Text] -> Tags
 [unTags] :: Tags -> [Text]
-newtype User2
-User2 :: [User] -> User2
-[unUser2] :: User2 -> [User]
 newtype Username
 Username :: Text -> Username
 [unUsername] :: Username -> Text
 
 -- | AdditionalPropertiesClass
 data AdditionalPropertiesClass
-AdditionalPropertiesClass :: !(Maybe (Map String Text)) -> !(Maybe (Map String (Map String Text))) -> AdditionalPropertiesClass
+AdditionalPropertiesClass :: !Maybe (Map String Text) -> !Maybe (Map String (Map String Text)) -> AdditionalPropertiesClass
 
 -- | "map_property"
-[additionalPropertiesClassMapProperty] :: AdditionalPropertiesClass -> !(Maybe (Map String Text))
+[additionalPropertiesClassMapProperty] :: AdditionalPropertiesClass -> !Maybe (Map String Text)
 
 -- | "map_of_map_property"
-[additionalPropertiesClassMapOfMapProperty] :: AdditionalPropertiesClass -> !(Maybe (Map String (Map String Text)))
+[additionalPropertiesClassMapOfMapProperty] :: AdditionalPropertiesClass -> !Maybe (Map String (Map String Text))
 
 -- | Construct a value of type <a>AdditionalPropertiesClass</a> (by
 --   applying it's required fields, if any)
@@ -674,38 +699,30 @@ mkAdditionalPropertiesClass :: AdditionalPropertiesClass
 
 -- | Animal
 data Animal
-Animal :: !(Text) -> !(Maybe Text) -> Animal
+Animal :: !Text -> !Maybe Text -> Animal
 
 -- | <i>Required</i> "className"
-[animalClassName] :: Animal -> !(Text)
+[animalClassName] :: Animal -> !Text
 
 -- | "color"
-[animalColor] :: Animal -> !(Maybe Text)
+[animalColor] :: Animal -> !Maybe Text
 
 -- | Construct a value of type <a>Animal</a> (by applying it's required
 --   fields, if any)
 mkAnimal :: Text -> Animal
 
--- | AnimalFarm
-data AnimalFarm
-AnimalFarm :: AnimalFarm
-
--- | Construct a value of type <a>AnimalFarm</a> (by applying it's required
---   fields, if any)
-mkAnimalFarm :: AnimalFarm
-
 -- | ApiResponse
 data ApiResponse
-ApiResponse :: !(Maybe Int) -> !(Maybe Text) -> !(Maybe Text) -> ApiResponse
+ApiResponse :: !Maybe Int -> !Maybe Text -> !Maybe Text -> ApiResponse
 
 -- | "code"
-[apiResponseCode] :: ApiResponse -> !(Maybe Int)
+[apiResponseCode] :: ApiResponse -> !Maybe Int
 
 -- | "type"
-[apiResponseType] :: ApiResponse -> !(Maybe Text)
+[apiResponseType] :: ApiResponse -> !Maybe Text
 
 -- | "message"
-[apiResponseMessage] :: ApiResponse -> !(Maybe Text)
+[apiResponseMessage] :: ApiResponse -> !Maybe Text
 
 -- | Construct a value of type <a>ApiResponse</a> (by applying it's
 --   required fields, if any)
@@ -713,10 +730,10 @@ mkApiResponse :: ApiResponse
 
 -- | ArrayOfArrayOfNumberOnly
 data ArrayOfArrayOfNumberOnly
-ArrayOfArrayOfNumberOnly :: !(Maybe [[Double]]) -> ArrayOfArrayOfNumberOnly
+ArrayOfArrayOfNumberOnly :: !Maybe [[Double]] -> ArrayOfArrayOfNumberOnly
 
 -- | <a>ArrayArrayNumber</a>
-[arrayOfArrayOfNumberOnlyArrayArrayNumber] :: ArrayOfArrayOfNumberOnly -> !(Maybe [[Double]])
+[arrayOfArrayOfNumberOnlyArrayArrayNumber] :: ArrayOfArrayOfNumberOnly -> !Maybe [[Double]]
 
 -- | Construct a value of type <a>ArrayOfArrayOfNumberOnly</a> (by applying
 --   it's required fields, if any)
@@ -724,10 +741,10 @@ mkArrayOfArrayOfNumberOnly :: ArrayOfArrayOfNumberOnly
 
 -- | ArrayOfNumberOnly
 data ArrayOfNumberOnly
-ArrayOfNumberOnly :: !(Maybe [Double]) -> ArrayOfNumberOnly
+ArrayOfNumberOnly :: !Maybe [Double] -> ArrayOfNumberOnly
 
 -- | <a>ArrayNumber</a>
-[arrayOfNumberOnlyArrayNumber] :: ArrayOfNumberOnly -> !(Maybe [Double])
+[arrayOfNumberOnlyArrayNumber] :: ArrayOfNumberOnly -> !Maybe [Double]
 
 -- | Construct a value of type <a>ArrayOfNumberOnly</a> (by applying it's
 --   required fields, if any)
@@ -735,16 +752,16 @@ mkArrayOfNumberOnly :: ArrayOfNumberOnly
 
 -- | ArrayTest
 data ArrayTest
-ArrayTest :: !(Maybe [Text]) -> !(Maybe [[Integer]]) -> !(Maybe [[ReadOnlyFirst]]) -> ArrayTest
+ArrayTest :: !Maybe [Text] -> !Maybe [[Integer]] -> !Maybe [[ReadOnlyFirst]] -> ArrayTest
 
 -- | "array_of_string"
-[arrayTestArrayOfString] :: ArrayTest -> !(Maybe [Text])
+[arrayTestArrayOfString] :: ArrayTest -> !Maybe [Text]
 
 -- | "array_array_of_integer"
-[arrayTestArrayArrayOfInteger] :: ArrayTest -> !(Maybe [[Integer]])
+[arrayTestArrayArrayOfInteger] :: ArrayTest -> !Maybe [[Integer]]
 
 -- | "array_array_of_model"
-[arrayTestArrayArrayOfModel] :: ArrayTest -> !(Maybe [[ReadOnlyFirst]])
+[arrayTestArrayArrayOfModel] :: ArrayTest -> !Maybe [[ReadOnlyFirst]]
 
 -- | Construct a value of type <a>ArrayTest</a> (by applying it's required
 --   fields, if any)
@@ -752,25 +769,25 @@ mkArrayTest :: ArrayTest
 
 -- | Capitalization
 data Capitalization
-Capitalization :: !(Maybe Text) -> !(Maybe Text) -> !(Maybe Text) -> !(Maybe Text) -> !(Maybe Text) -> !(Maybe Text) -> Capitalization
+Capitalization :: !Maybe Text -> !Maybe Text -> !Maybe Text -> !Maybe Text -> !Maybe Text -> !Maybe Text -> Capitalization
 
 -- | "smallCamel"
-[capitalizationSmallCamel] :: Capitalization -> !(Maybe Text)
+[capitalizationSmallCamel] :: Capitalization -> !Maybe Text
 
 -- | <a>CapitalCamel</a>
-[capitalizationCapitalCamel] :: Capitalization -> !(Maybe Text)
+[capitalizationCapitalCamel] :: Capitalization -> !Maybe Text
 
 -- | "small_Snake"
-[capitalizationSmallSnake] :: Capitalization -> !(Maybe Text)
+[capitalizationSmallSnake] :: Capitalization -> !Maybe Text
 
 -- | <a>Capital_Snake</a>
-[capitalizationCapitalSnake] :: Capitalization -> !(Maybe Text)
+[capitalizationCapitalSnake] :: Capitalization -> !Maybe Text
 
 -- | <a>SCA_ETH_Flow_Points</a>
-[capitalizationScaEthFlowPoints] :: Capitalization -> !(Maybe Text)
+[capitalizationScaEthFlowPoints] :: Capitalization -> !Maybe Text
 
 -- | <a>ATT_NAME</a> - Name of the pet
-[capitalizationAttName] :: Capitalization -> !(Maybe Text)
+[capitalizationAttName] :: Capitalization -> !Maybe Text
 
 -- | Construct a value of type <a>Capitalization</a> (by applying it's
 --   required fields, if any)
@@ -778,16 +795,16 @@ mkCapitalization :: Capitalization
 
 -- | Cat
 data Cat
-Cat :: !(Text) -> !(Maybe Text) -> !(Maybe Bool) -> Cat
+Cat :: !Text -> !Maybe Text -> !Maybe Bool -> Cat
 
 -- | <i>Required</i> "className"
-[catClassName] :: Cat -> !(Text)
+[catClassName] :: Cat -> !Text
 
 -- | "color"
-[catColor] :: Cat -> !(Maybe Text)
+[catColor] :: Cat -> !Maybe Text
 
 -- | "declawed"
-[catDeclawed] :: Cat -> !(Maybe Bool)
+[catDeclawed] :: Cat -> !Maybe Bool
 
 -- | Construct a value of type <a>Cat</a> (by applying it's required
 --   fields, if any)
@@ -795,13 +812,13 @@ mkCat :: Text -> Cat
 
 -- | Category
 data Category
-Category :: !(Maybe Integer) -> !(Text) -> Category
+Category :: !Maybe Integer -> !Text -> Category
 
 -- | "id"
-[categoryId] :: Category -> !(Maybe Integer)
+[categoryId] :: Category -> !Maybe Integer
 
 -- | <i>Required</i> "name"
-[categoryName] :: Category -> !(Text)
+[categoryName] :: Category -> !Text
 
 -- | Construct a value of type <a>Category</a> (by applying it's required
 --   fields, if any)
@@ -809,10 +826,10 @@ mkCategory :: Text -> Category
 
 -- | ClassModel Model for testing model with "_class" property
 data ClassModel
-ClassModel :: !(Maybe Text) -> ClassModel
+ClassModel :: !Maybe Text -> ClassModel
 
 -- | "_class"
-[classModelClass] :: ClassModel -> !(Maybe Text)
+[classModelClass] :: ClassModel -> !Maybe Text
 
 -- | Construct a value of type <a>ClassModel</a> (by applying it's required
 --   fields, if any)
@@ -820,10 +837,10 @@ mkClassModel :: ClassModel
 
 -- | Client
 data Client
-Client :: !(Maybe Text) -> Client
+Client :: !Maybe Text -> Client
 
 -- | "client"
-[clientClient] :: Client -> !(Maybe Text)
+[clientClient] :: Client -> !Maybe Text
 
 -- | Construct a value of type <a>Client</a> (by applying it's required
 --   fields, if any)
@@ -831,16 +848,16 @@ mkClient :: Client
 
 -- | Dog
 data Dog
-Dog :: !(Text) -> !(Maybe Text) -> !(Maybe Text) -> Dog
+Dog :: !Text -> !Maybe Text -> !Maybe Text -> Dog
 
 -- | <i>Required</i> "className"
-[dogClassName] :: Dog -> !(Text)
+[dogClassName] :: Dog -> !Text
 
 -- | "color"
-[dogColor] :: Dog -> !(Maybe Text)
+[dogColor] :: Dog -> !Maybe Text
 
 -- | "breed"
-[dogBreed] :: Dog -> !(Maybe Text)
+[dogBreed] :: Dog -> !Maybe Text
 
 -- | Construct a value of type <a>Dog</a> (by applying it's required
 --   fields, if any)
@@ -848,13 +865,13 @@ mkDog :: Text -> Dog
 
 -- | EnumArrays
 data EnumArrays
-EnumArrays :: !(Maybe E'JustSymbol) -> !(Maybe [E'ArrayEnum]) -> EnumArrays
+EnumArrays :: !Maybe E'JustSymbol -> !Maybe [E'ArrayEnum] -> EnumArrays
 
 -- | "just_symbol"
-[enumArraysJustSymbol] :: EnumArrays -> !(Maybe E'JustSymbol)
+[enumArraysJustSymbol] :: EnumArrays -> !Maybe E'JustSymbol
 
 -- | "array_enum"
-[enumArraysArrayEnum] :: EnumArrays -> !(Maybe [E'ArrayEnum])
+[enumArraysArrayEnum] :: EnumArrays -> !Maybe [E'ArrayEnum]
 
 -- | Construct a value of type <a>EnumArrays</a> (by applying it's required
 --   fields, if any)
@@ -862,22 +879,22 @@ mkEnumArrays :: EnumArrays
 
 -- | EnumTest
 data EnumTest
-EnumTest :: !(Maybe E'EnumString) -> !(E'EnumString) -> !(Maybe E'EnumInteger) -> !(Maybe E'EnumNumber) -> !(Maybe OuterEnum) -> EnumTest
+EnumTest :: !Maybe E'EnumString -> !E'EnumString -> !Maybe E'EnumInteger -> !Maybe E'EnumNumber -> !Maybe OuterEnum -> EnumTest
 
 -- | "enum_string"
-[enumTestEnumString] :: EnumTest -> !(Maybe E'EnumString)
+[enumTestEnumString] :: EnumTest -> !Maybe E'EnumString
 
 -- | <i>Required</i> "enum_string_required"
-[enumTestEnumStringRequired] :: EnumTest -> !(E'EnumString)
+[enumTestEnumStringRequired] :: EnumTest -> !E'EnumString
 
 -- | "enum_integer"
-[enumTestEnumInteger] :: EnumTest -> !(Maybe E'EnumInteger)
+[enumTestEnumInteger] :: EnumTest -> !Maybe E'EnumInteger
 
 -- | "enum_number"
-[enumTestEnumNumber] :: EnumTest -> !(Maybe E'EnumNumber)
+[enumTestEnumNumber] :: EnumTest -> !Maybe E'EnumNumber
 
 -- | "outerEnum"
-[enumTestOuterEnum] :: EnumTest -> !(Maybe OuterEnum)
+[enumTestOuterEnum] :: EnumTest -> !Maybe OuterEnum
 
 -- | Construct a value of type <a>EnumTest</a> (by applying it's required
 --   fields, if any)
@@ -885,10 +902,10 @@ mkEnumTest :: E'EnumString -> EnumTest
 
 -- | File Must be named <a>File</a> for test.
 data File
-File :: !(Maybe Text) -> File
+File :: !Maybe Text -> File
 
 -- | "sourceURI" - Test capitalization
-[fileSourceUri] :: File -> !(Maybe Text)
+[fileSourceUri] :: File -> !Maybe Text
 
 -- | Construct a value of type <a>File</a> (by applying it's required
 --   fields, if any)
@@ -896,13 +913,13 @@ mkFile :: File
 
 -- | FileSchemaTestClass
 data FileSchemaTestClass
-FileSchemaTestClass :: !(Maybe File) -> !(Maybe [File]) -> FileSchemaTestClass
+FileSchemaTestClass :: !Maybe File -> !Maybe [File] -> FileSchemaTestClass
 
 -- | "file"
-[fileSchemaTestClassFile] :: FileSchemaTestClass -> !(Maybe File)
+[fileSchemaTestClassFile] :: FileSchemaTestClass -> !Maybe File
 
 -- | "files"
-[fileSchemaTestClassFiles] :: FileSchemaTestClass -> !(Maybe [File])
+[fileSchemaTestClassFiles] :: FileSchemaTestClass -> !Maybe [File]
 
 -- | Construct a value of type <a>FileSchemaTestClass</a> (by applying it's
 --   required fields, if any)
@@ -910,46 +927,46 @@ mkFileSchemaTestClass :: FileSchemaTestClass
 
 -- | FormatTest
 data FormatTest
-FormatTest :: !(Maybe Int) -> !(Maybe Int) -> !(Maybe Integer) -> !(Double) -> !(Maybe Float) -> !(Maybe Double) -> !(Maybe Text) -> !(ByteArray) -> !(Maybe FilePath) -> !(Date) -> !(Maybe DateTime) -> !(Maybe Text) -> !(Text) -> FormatTest
+FormatTest :: !Maybe Int -> !Maybe Int -> !Maybe Integer -> !Double -> !Maybe Float -> !Maybe Double -> !Maybe Text -> !ByteArray -> !Maybe FilePath -> !Date -> !Maybe DateTime -> !Maybe Text -> !Text -> FormatTest
 
 -- | "integer"
-[formatTestInteger] :: FormatTest -> !(Maybe Int)
+[formatTestInteger] :: FormatTest -> !Maybe Int
 
 -- | "int32"
-[formatTestInt32] :: FormatTest -> !(Maybe Int)
+[formatTestInt32] :: FormatTest -> !Maybe Int
 
 -- | "int64"
-[formatTestInt64] :: FormatTest -> !(Maybe Integer)
+[formatTestInt64] :: FormatTest -> !Maybe Integer
 
 -- | <i>Required</i> "number"
-[formatTestNumber] :: FormatTest -> !(Double)
+[formatTestNumber] :: FormatTest -> !Double
 
 -- | "float"
-[formatTestFloat] :: FormatTest -> !(Maybe Float)
+[formatTestFloat] :: FormatTest -> !Maybe Float
 
 -- | "double"
-[formatTestDouble] :: FormatTest -> !(Maybe Double)
+[formatTestDouble] :: FormatTest -> !Maybe Double
 
 -- | "string"
-[formatTestString] :: FormatTest -> !(Maybe Text)
+[formatTestString] :: FormatTest -> !Maybe Text
 
 -- | <i>Required</i> "byte"
-[formatTestByte] :: FormatTest -> !(ByteArray)
+[formatTestByte] :: FormatTest -> !ByteArray
 
 -- | "binary"
-[formatTestBinary] :: FormatTest -> !(Maybe FilePath)
+[formatTestBinary] :: FormatTest -> !Maybe FilePath
 
 -- | <i>Required</i> "date"
-[formatTestDate] :: FormatTest -> !(Date)
+[formatTestDate] :: FormatTest -> !Date
 
 -- | "dateTime"
-[formatTestDateTime] :: FormatTest -> !(Maybe DateTime)
+[formatTestDateTime] :: FormatTest -> !Maybe DateTime
 
 -- | "uuid"
-[formatTestUuid] :: FormatTest -> !(Maybe Text)
+[formatTestUuid] :: FormatTest -> !Maybe Text
 
 -- | <i>Required</i> "password"
-[formatTestPassword] :: FormatTest -> !(Text)
+[formatTestPassword] :: FormatTest -> !Text
 
 -- | Construct a value of type <a>FormatTest</a> (by applying it's required
 --   fields, if any)
@@ -957,13 +974,13 @@ mkFormatTest :: Double -> ByteArray -> Date -> Text -> FormatTest
 
 -- | HasOnlyReadOnly
 data HasOnlyReadOnly
-HasOnlyReadOnly :: !(Maybe Text) -> !(Maybe Text) -> HasOnlyReadOnly
+HasOnlyReadOnly :: !Maybe Text -> !Maybe Text -> HasOnlyReadOnly
 
 -- | "bar"
-[hasOnlyReadOnlyBar] :: HasOnlyReadOnly -> !(Maybe Text)
+[hasOnlyReadOnlyBar] :: HasOnlyReadOnly -> !Maybe Text
 
 -- | "foo"
-[hasOnlyReadOnlyFoo] :: HasOnlyReadOnly -> !(Maybe Text)
+[hasOnlyReadOnlyFoo] :: HasOnlyReadOnly -> !Maybe Text
 
 -- | Construct a value of type <a>HasOnlyReadOnly</a> (by applying it's
 --   required fields, if any)
@@ -971,19 +988,19 @@ mkHasOnlyReadOnly :: HasOnlyReadOnly
 
 -- | MapTest
 data MapTest
-MapTest :: !(Maybe (Map String (Map String Text))) -> !(Maybe (Map String E'Inner)) -> !(Maybe (Map String Bool)) -> !(Maybe (Map String Bool)) -> MapTest
+MapTest :: !Maybe (Map String (Map String Text)) -> !Maybe (Map String E'Inner) -> !Maybe (Map String Bool) -> !Maybe (Map String Bool) -> MapTest
 
 -- | "map_map_of_string"
-[mapTestMapMapOfString] :: MapTest -> !(Maybe (Map String (Map String Text)))
+[mapTestMapMapOfString] :: MapTest -> !Maybe (Map String (Map String Text))
 
 -- | "map_of_enum_string"
-[mapTestMapOfEnumString] :: MapTest -> !(Maybe (Map String E'Inner))
+[mapTestMapOfEnumString] :: MapTest -> !Maybe (Map String E'Inner)
 
 -- | "direct_map"
-[mapTestDirectMap] :: MapTest -> !(Maybe (Map String Bool))
+[mapTestDirectMap] :: MapTest -> !Maybe (Map String Bool)
 
 -- | "indirect_map"
-[mapTestIndirectMap] :: MapTest -> !(Maybe (Map String Bool))
+[mapTestIndirectMap] :: MapTest -> !Maybe (Map String Bool)
 
 -- | Construct a value of type <a>MapTest</a> (by applying it's required
 --   fields, if any)
@@ -991,16 +1008,16 @@ mkMapTest :: MapTest
 
 -- | MixedPropertiesAndAdditionalPropertiesClass
 data MixedPropertiesAndAdditionalPropertiesClass
-MixedPropertiesAndAdditionalPropertiesClass :: !(Maybe Text) -> !(Maybe DateTime) -> !(Maybe (Map String Animal)) -> MixedPropertiesAndAdditionalPropertiesClass
+MixedPropertiesAndAdditionalPropertiesClass :: !Maybe Text -> !Maybe DateTime -> !Maybe (Map String Animal) -> MixedPropertiesAndAdditionalPropertiesClass
 
 -- | "uuid"
-[mixedPropertiesAndAdditionalPropertiesClassUuid] :: MixedPropertiesAndAdditionalPropertiesClass -> !(Maybe Text)
+[mixedPropertiesAndAdditionalPropertiesClassUuid] :: MixedPropertiesAndAdditionalPropertiesClass -> !Maybe Text
 
 -- | "dateTime"
-[mixedPropertiesAndAdditionalPropertiesClassDateTime] :: MixedPropertiesAndAdditionalPropertiesClass -> !(Maybe DateTime)
+[mixedPropertiesAndAdditionalPropertiesClassDateTime] :: MixedPropertiesAndAdditionalPropertiesClass -> !Maybe DateTime
 
 -- | "map"
-[mixedPropertiesAndAdditionalPropertiesClassMap] :: MixedPropertiesAndAdditionalPropertiesClass -> !(Maybe (Map String Animal))
+[mixedPropertiesAndAdditionalPropertiesClassMap] :: MixedPropertiesAndAdditionalPropertiesClass -> !Maybe (Map String Animal)
 
 -- | Construct a value of type
 --   <a>MixedPropertiesAndAdditionalPropertiesClass</a> (by applying it's
@@ -1009,13 +1026,13 @@ mkMixedPropertiesAndAdditionalPropertiesClass :: MixedPropertiesAndAdditionalPro
 
 -- | Model200Response Model for testing model name starting with number
 data Model200Response
-Model200Response :: !(Maybe Int) -> !(Maybe Text) -> Model200Response
+Model200Response :: !Maybe Int -> !Maybe Text -> Model200Response
 
 -- | "name"
-[model200ResponseName] :: Model200Response -> !(Maybe Int)
+[model200ResponseName] :: Model200Response -> !Maybe Int
 
 -- | "class"
-[model200ResponseClass] :: Model200Response -> !(Maybe Text)
+[model200ResponseClass] :: Model200Response -> !Maybe Text
 
 -- | Construct a value of type <a>Model200Response</a> (by applying it's
 --   required fields, if any)
@@ -1023,10 +1040,10 @@ mkModel200Response :: Model200Response
 
 -- | ModelList
 data ModelList
-ModelList :: !(Maybe Text) -> ModelList
+ModelList :: !Maybe Text -> ModelList
 
 -- | "123-list"
-[modelList123list] :: ModelList -> !(Maybe Text)
+[modelList123list] :: ModelList -> !Maybe Text
 
 -- | Construct a value of type <a>ModelList</a> (by applying it's required
 --   fields, if any)
@@ -1034,10 +1051,10 @@ mkModelList :: ModelList
 
 -- | ModelReturn Model for testing reserved words
 data ModelReturn
-ModelReturn :: !(Maybe Int) -> ModelReturn
+ModelReturn :: !Maybe Int -> ModelReturn
 
 -- | "return"
-[modelReturnReturn] :: ModelReturn -> !(Maybe Int)
+[modelReturnReturn] :: ModelReturn -> !Maybe Int
 
 -- | Construct a value of type <a>ModelReturn</a> (by applying it's
 --   required fields, if any)
@@ -1045,19 +1062,19 @@ mkModelReturn :: ModelReturn
 
 -- | Name Model for testing model name same as property name
 data Name
-Name :: !(Int) -> !(Maybe Int) -> !(Maybe Text) -> !(Maybe Int) -> Name
+Name :: !Int -> !Maybe Int -> !Maybe Text -> !Maybe Int -> Name
 
 -- | <i>Required</i> "name"
-[nameName] :: Name -> !(Int)
+[nameName] :: Name -> !Int
 
 -- | "snake_case"
-[nameSnakeCase] :: Name -> !(Maybe Int)
+[nameSnakeCase] :: Name -> !Maybe Int
 
 -- | "property"
-[nameProperty] :: Name -> !(Maybe Text)
+[nameProperty] :: Name -> !Maybe Text
 
 -- | "123Number"
-[name123number] :: Name -> !(Maybe Int)
+[name123number] :: Name -> !Maybe Int
 
 -- | Construct a value of type <a>Name</a> (by applying it's required
 --   fields, if any)
@@ -1065,10 +1082,10 @@ mkName :: Int -> Name
 
 -- | NumberOnly
 data NumberOnly
-NumberOnly :: !(Maybe Double) -> NumberOnly
+NumberOnly :: !Maybe Double -> NumberOnly
 
 -- | <a>JustNumber</a>
-[numberOnlyJustNumber] :: NumberOnly -> !(Maybe Double)
+[numberOnlyJustNumber] :: NumberOnly -> !Maybe Double
 
 -- | Construct a value of type <a>NumberOnly</a> (by applying it's required
 --   fields, if any)
@@ -1076,25 +1093,25 @@ mkNumberOnly :: NumberOnly
 
 -- | Order
 data Order
-Order :: !(Maybe Integer) -> !(Maybe Integer) -> !(Maybe Int) -> !(Maybe DateTime) -> !(Maybe E'Status) -> !(Maybe Bool) -> Order
+Order :: !Maybe Integer -> !Maybe Integer -> !Maybe Int -> !Maybe DateTime -> !Maybe E'Status -> !Maybe Bool -> Order
 
 -- | "id"
-[orderId] :: Order -> !(Maybe Integer)
+[orderId] :: Order -> !Maybe Integer
 
 -- | "petId"
-[orderPetId] :: Order -> !(Maybe Integer)
+[orderPetId] :: Order -> !Maybe Integer
 
 -- | "quantity"
-[orderQuantity] :: Order -> !(Maybe Int)
+[orderQuantity] :: Order -> !Maybe Int
 
 -- | "shipDate"
-[orderShipDate] :: Order -> !(Maybe DateTime)
+[orderShipDate] :: Order -> !Maybe DateTime
 
 -- | "status" - Order Status
-[orderStatus] :: Order -> !(Maybe E'Status)
+[orderStatus] :: Order -> !Maybe E'Status
 
 -- | "complete"
-[orderComplete] :: Order -> !(Maybe Bool)
+[orderComplete] :: Order -> !Maybe Bool
 
 -- | Construct a value of type <a>Order</a> (by applying it's required
 --   fields, if any)
@@ -1102,16 +1119,16 @@ mkOrder :: Order
 
 -- | OuterComposite
 data OuterComposite
-OuterComposite :: !(Maybe Double) -> !(Maybe Text) -> !(Maybe Bool) -> OuterComposite
+OuterComposite :: !Maybe Double -> !Maybe Text -> !Maybe Bool -> OuterComposite
 
 -- | "my_number"
-[outerCompositeMyNumber] :: OuterComposite -> !(Maybe Double)
+[outerCompositeMyNumber] :: OuterComposite -> !Maybe Double
 
 -- | "my_string"
-[outerCompositeMyString] :: OuterComposite -> !(Maybe Text)
+[outerCompositeMyString] :: OuterComposite -> !Maybe Text
 
 -- | "my_boolean"
-[outerCompositeMyBoolean] :: OuterComposite -> !(Maybe Bool)
+[outerCompositeMyBoolean] :: OuterComposite -> !Maybe Bool
 
 -- | Construct a value of type <a>OuterComposite</a> (by applying it's
 --   required fields, if any)
@@ -1119,25 +1136,25 @@ mkOuterComposite :: OuterComposite
 
 -- | Pet
 data Pet
-Pet :: !(Maybe Integer) -> !(Maybe Category) -> !(Text) -> !([Text]) -> !(Maybe [Tag]) -> !(Maybe E'Status2) -> Pet
+Pet :: !Maybe Integer -> !Maybe Category -> !Text -> ![Text] -> !Maybe [Tag] -> !Maybe E'Status2 -> Pet
 
 -- | "id"
-[petId] :: Pet -> !(Maybe Integer)
+[petId] :: Pet -> !Maybe Integer
 
 -- | "category"
-[petCategory] :: Pet -> !(Maybe Category)
+[petCategory] :: Pet -> !Maybe Category
 
 -- | <i>Required</i> "name"
-[petName] :: Pet -> !(Text)
+[petName] :: Pet -> !Text
 
 -- | <i>Required</i> "photoUrls"
-[petPhotoUrls] :: Pet -> !([Text])
+[petPhotoUrls] :: Pet -> ![Text]
 
 -- | "tags"
-[petTags] :: Pet -> !(Maybe [Tag])
+[petTags] :: Pet -> !Maybe [Tag]
 
 -- | "status" - pet status in the store
-[petStatus] :: Pet -> !(Maybe E'Status2)
+[petStatus] :: Pet -> !Maybe E'Status2
 
 -- | Construct a value of type <a>Pet</a> (by applying it's required
 --   fields, if any)
@@ -1145,13 +1162,13 @@ mkPet :: Text -> [Text] -> Pet
 
 -- | ReadOnlyFirst
 data ReadOnlyFirst
-ReadOnlyFirst :: !(Maybe Text) -> !(Maybe Text) -> ReadOnlyFirst
+ReadOnlyFirst :: !Maybe Text -> !Maybe Text -> ReadOnlyFirst
 
 -- | "bar"
-[readOnlyFirstBar] :: ReadOnlyFirst -> !(Maybe Text)
+[readOnlyFirstBar] :: ReadOnlyFirst -> !Maybe Text
 
 -- | "baz"
-[readOnlyFirstBaz] :: ReadOnlyFirst -> !(Maybe Text)
+[readOnlyFirstBaz] :: ReadOnlyFirst -> !Maybe Text
 
 -- | Construct a value of type <a>ReadOnlyFirst</a> (by applying it's
 --   required fields, if any)
@@ -1159,68 +1176,201 @@ mkReadOnlyFirst :: ReadOnlyFirst
 
 -- | SpecialModelName
 data SpecialModelName
-SpecialModelName :: !(Maybe Integer) -> SpecialModelName
+SpecialModelName :: !Maybe Integer -> SpecialModelName
 
 -- | "$special[property.name]"
-[specialModelNameSpecialPropertyName] :: SpecialModelName -> !(Maybe Integer)
+[specialModelNameSpecialPropertyName] :: SpecialModelName -> !Maybe Integer
 
 -- | Construct a value of type <a>SpecialModelName</a> (by applying it's
 --   required fields, if any)
 mkSpecialModelName :: SpecialModelName
 
--- | StringBooleanMap
-data StringBooleanMap
-StringBooleanMap :: StringBooleanMap
-
--- | Construct a value of type <a>StringBooleanMap</a> (by applying it's
---   required fields, if any)
-mkStringBooleanMap :: StringBooleanMap
-
 -- | Tag
 data Tag
-Tag :: !(Maybe Integer) -> !(Maybe Text) -> Tag
+Tag :: !Maybe Integer -> !Maybe Text -> Tag
 
 -- | "id"
-[tagId] :: Tag -> !(Maybe Integer)
+[tagId] :: Tag -> !Maybe Integer
 
 -- | "name"
-[tagName] :: Tag -> !(Maybe Text)
+[tagName] :: Tag -> !Maybe Text
 
 -- | Construct a value of type <a>Tag</a> (by applying it's required
 --   fields, if any)
 mkTag :: Tag
 
+-- | TypeHolderDefault
+data TypeHolderDefault
+TypeHolderDefault :: !Text -> !Double -> !Int -> !Bool -> ![Int] -> TypeHolderDefault
+
+-- | <i>Required</i> "string_item"
+[typeHolderDefaultStringItem] :: TypeHolderDefault -> !Text
+
+-- | <i>Required</i> "number_item"
+[typeHolderDefaultNumberItem] :: TypeHolderDefault -> !Double
+
+-- | <i>Required</i> "integer_item"
+[typeHolderDefaultIntegerItem] :: TypeHolderDefault -> !Int
+
+-- | <i>Required</i> "bool_item"
+[typeHolderDefaultBoolItem] :: TypeHolderDefault -> !Bool
+
+-- | <i>Required</i> "array_item"
+[typeHolderDefaultArrayItem] :: TypeHolderDefault -> ![Int]
+
+-- | Construct a value of type <a>TypeHolderDefault</a> (by applying it's
+--   required fields, if any)
+mkTypeHolderDefault :: Text -> Double -> Int -> Bool -> [Int] -> TypeHolderDefault
+
+-- | TypeHolderExample
+data TypeHolderExample
+TypeHolderExample :: !Text -> !Double -> !Int -> !Bool -> ![Int] -> TypeHolderExample
+
+-- | <i>Required</i> "string_item"
+[typeHolderExampleStringItem] :: TypeHolderExample -> !Text
+
+-- | <i>Required</i> "number_item"
+[typeHolderExampleNumberItem] :: TypeHolderExample -> !Double
+
+-- | <i>Required</i> "integer_item"
+[typeHolderExampleIntegerItem] :: TypeHolderExample -> !Int
+
+-- | <i>Required</i> "bool_item"
+[typeHolderExampleBoolItem] :: TypeHolderExample -> !Bool
+
+-- | <i>Required</i> "array_item"
+[typeHolderExampleArrayItem] :: TypeHolderExample -> ![Int]
+
+-- | Construct a value of type <a>TypeHolderExample</a> (by applying it's
+--   required fields, if any)
+mkTypeHolderExample :: Text -> Double -> Int -> Bool -> [Int] -> TypeHolderExample
+
 -- | User
 data User
-User :: !(Maybe Integer) -> !(Maybe Text) -> !(Maybe Text) -> !(Maybe Text) -> !(Maybe Text) -> !(Maybe Text) -> !(Maybe Text) -> !(Maybe Int) -> User
+User :: !Maybe Integer -> !Maybe Text -> !Maybe Text -> !Maybe Text -> !Maybe Text -> !Maybe Text -> !Maybe Text -> !Maybe Int -> User
 
 -- | "id"
-[userId] :: User -> !(Maybe Integer)
+[userId] :: User -> !Maybe Integer
 
 -- | "username"
-[userUsername] :: User -> !(Maybe Text)
+[userUsername] :: User -> !Maybe Text
 
 -- | "firstName"
-[userFirstName] :: User -> !(Maybe Text)
+[userFirstName] :: User -> !Maybe Text
 
 -- | "lastName"
-[userLastName] :: User -> !(Maybe Text)
+[userLastName] :: User -> !Maybe Text
 
 -- | "email"
-[userEmail] :: User -> !(Maybe Text)
+[userEmail] :: User -> !Maybe Text
 
 -- | "password"
-[userPassword] :: User -> !(Maybe Text)
+[userPassword] :: User -> !Maybe Text
 
 -- | "phone"
-[userPhone] :: User -> !(Maybe Text)
+[userPhone] :: User -> !Maybe Text
 
 -- | "userStatus" - User Status
-[userUserStatus] :: User -> !(Maybe Int)
+[userUserStatus] :: User -> !Maybe Int
 
 -- | Construct a value of type <a>User</a> (by applying it's required
 --   fields, if any)
 mkUser :: User
+
+-- | XmlItem
+data XmlItem
+XmlItem :: !Maybe Text -> !Maybe Double -> !Maybe Int -> !Maybe Bool -> !Maybe [Int] -> !Maybe Text -> !Maybe Double -> !Maybe Int -> !Maybe Bool -> !Maybe [Int] -> !Maybe [Int] -> !Maybe Text -> !Maybe Double -> !Maybe Int -> !Maybe Bool -> !Maybe [Int] -> !Maybe [Int] -> !Maybe Text -> !Maybe Double -> !Maybe Int -> !Maybe Bool -> !Maybe [Int] -> !Maybe [Int] -> !Maybe Text -> !Maybe Double -> !Maybe Int -> !Maybe Bool -> !Maybe [Int] -> !Maybe [Int] -> XmlItem
+
+-- | "attribute_string"
+[xmlItemAttributeString] :: XmlItem -> !Maybe Text
+
+-- | "attribute_number"
+[xmlItemAttributeNumber] :: XmlItem -> !Maybe Double
+
+-- | "attribute_integer"
+[xmlItemAttributeInteger] :: XmlItem -> !Maybe Int
+
+-- | "attribute_boolean"
+[xmlItemAttributeBoolean] :: XmlItem -> !Maybe Bool
+
+-- | "wrapped_array"
+[xmlItemWrappedArray] :: XmlItem -> !Maybe [Int]
+
+-- | "name_string"
+[xmlItemNameString] :: XmlItem -> !Maybe Text
+
+-- | "name_number"
+[xmlItemNameNumber] :: XmlItem -> !Maybe Double
+
+-- | "name_integer"
+[xmlItemNameInteger] :: XmlItem -> !Maybe Int
+
+-- | "name_boolean"
+[xmlItemNameBoolean] :: XmlItem -> !Maybe Bool
+
+-- | "name_array"
+[xmlItemNameArray] :: XmlItem -> !Maybe [Int]
+
+-- | "name_wrapped_array"
+[xmlItemNameWrappedArray] :: XmlItem -> !Maybe [Int]
+
+-- | "prefix_string"
+[xmlItemPrefixString] :: XmlItem -> !Maybe Text
+
+-- | "prefix_number"
+[xmlItemPrefixNumber] :: XmlItem -> !Maybe Double
+
+-- | "prefix_integer"
+[xmlItemPrefixInteger] :: XmlItem -> !Maybe Int
+
+-- | "prefix_boolean"
+[xmlItemPrefixBoolean] :: XmlItem -> !Maybe Bool
+
+-- | "prefix_array"
+[xmlItemPrefixArray] :: XmlItem -> !Maybe [Int]
+
+-- | "prefix_wrapped_array"
+[xmlItemPrefixWrappedArray] :: XmlItem -> !Maybe [Int]
+
+-- | "namespace_string"
+[xmlItemNamespaceString] :: XmlItem -> !Maybe Text
+
+-- | "namespace_number"
+[xmlItemNamespaceNumber] :: XmlItem -> !Maybe Double
+
+-- | "namespace_integer"
+[xmlItemNamespaceInteger] :: XmlItem -> !Maybe Int
+
+-- | "namespace_boolean"
+[xmlItemNamespaceBoolean] :: XmlItem -> !Maybe Bool
+
+-- | "namespace_array"
+[xmlItemNamespaceArray] :: XmlItem -> !Maybe [Int]
+
+-- | "namespace_wrapped_array"
+[xmlItemNamespaceWrappedArray] :: XmlItem -> !Maybe [Int]
+
+-- | "prefix_ns_string"
+[xmlItemPrefixNsString] :: XmlItem -> !Maybe Text
+
+-- | "prefix_ns_number"
+[xmlItemPrefixNsNumber] :: XmlItem -> !Maybe Double
+
+-- | "prefix_ns_integer"
+[xmlItemPrefixNsInteger] :: XmlItem -> !Maybe Int
+
+-- | "prefix_ns_boolean"
+[xmlItemPrefixNsBoolean] :: XmlItem -> !Maybe Bool
+
+-- | "prefix_ns_array"
+[xmlItemPrefixNsArray] :: XmlItem -> !Maybe [Int]
+
+-- | "prefix_ns_wrapped_array"
+[xmlItemPrefixNsWrappedArray] :: XmlItem -> !Maybe [Int]
+
+-- | Construct a value of type <a>XmlItem</a> (by applying it's required
+--   fields, if any)
+mkXmlItem :: XmlItem
 
 -- | Enum of <a>Text</a>
 data E'ArrayEnum
@@ -1615,15 +1765,19 @@ instance GHC.Enum.Bounded OpenAPIPetstore.Model.E'ArrayEnum
 instance GHC.Classes.Ord OpenAPIPetstore.Model.E'ArrayEnum
 instance GHC.Classes.Eq OpenAPIPetstore.Model.E'ArrayEnum
 instance GHC.Show.Show OpenAPIPetstore.Model.E'ArrayEnum
-instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.User2
-instance GHC.Show.Show OpenAPIPetstore.Model.User2
-instance GHC.Classes.Eq OpenAPIPetstore.Model.User2
+instance GHC.Classes.Eq OpenAPIPetstore.Model.XmlItem
+instance GHC.Show.Show OpenAPIPetstore.Model.XmlItem
+instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.Body
+instance GHC.Show.Show OpenAPIPetstore.Model.Body
+instance GHC.Classes.Eq OpenAPIPetstore.Model.Body
 instance GHC.Classes.Eq OpenAPIPetstore.Model.User
 instance GHC.Show.Show OpenAPIPetstore.Model.User
+instance GHC.Classes.Eq OpenAPIPetstore.Model.TypeHolderExample
+instance GHC.Show.Show OpenAPIPetstore.Model.TypeHolderExample
+instance GHC.Classes.Eq OpenAPIPetstore.Model.TypeHolderDefault
+instance GHC.Show.Show OpenAPIPetstore.Model.TypeHolderDefault
 instance GHC.Classes.Eq OpenAPIPetstore.Model.Tag
 instance GHC.Show.Show OpenAPIPetstore.Model.Tag
-instance GHC.Classes.Eq OpenAPIPetstore.Model.StringBooleanMap
-instance GHC.Show.Show OpenAPIPetstore.Model.StringBooleanMap
 instance GHC.Classes.Eq OpenAPIPetstore.Model.SpecialModelName
 instance GHC.Show.Show OpenAPIPetstore.Model.SpecialModelName
 instance GHC.Classes.Eq OpenAPIPetstore.Model.ArrayTest
@@ -1670,8 +1824,6 @@ instance GHC.Classes.Eq OpenAPIPetstore.Model.ArrayOfArrayOfNumberOnly
 instance GHC.Show.Show OpenAPIPetstore.Model.ArrayOfArrayOfNumberOnly
 instance GHC.Classes.Eq OpenAPIPetstore.Model.ApiResponse
 instance GHC.Show.Show OpenAPIPetstore.Model.ApiResponse
-instance GHC.Classes.Eq OpenAPIPetstore.Model.AnimalFarm
-instance GHC.Show.Show OpenAPIPetstore.Model.AnimalFarm
 instance GHC.Classes.Eq OpenAPIPetstore.Model.Animal
 instance GHC.Show.Show OpenAPIPetstore.Model.Animal
 instance GHC.Classes.Eq OpenAPIPetstore.Model.AdditionalPropertiesClass
@@ -1692,9 +1844,6 @@ instance GHC.Show.Show OpenAPIPetstore.Model.RequiredFile
 instance GHC.Classes.Eq OpenAPIPetstore.Model.RequiredFile
 instance GHC.Show.Show OpenAPIPetstore.Model.RequiredBooleanGroup
 instance GHC.Classes.Eq OpenAPIPetstore.Model.RequiredBooleanGroup
-instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.RequestBody
-instance GHC.Show.Show OpenAPIPetstore.Model.RequestBody
-instance GHC.Classes.Eq OpenAPIPetstore.Model.RequestBody
 instance GHC.Show.Show OpenAPIPetstore.Model.Query
 instance GHC.Classes.Eq OpenAPIPetstore.Model.Query
 instance GHC.Show.Show OpenAPIPetstore.Model.PetId
@@ -1705,6 +1854,9 @@ instance GHC.Show.Show OpenAPIPetstore.Model.Password
 instance GHC.Classes.Eq OpenAPIPetstore.Model.Password
 instance GHC.Show.Show OpenAPIPetstore.Model.ParamString
 instance GHC.Classes.Eq OpenAPIPetstore.Model.ParamString
+instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.ParamMapMapStringText
+instance GHC.Show.Show OpenAPIPetstore.Model.ParamMapMapStringText
+instance GHC.Classes.Eq OpenAPIPetstore.Model.ParamMapMapStringText
 instance GHC.Show.Show OpenAPIPetstore.Model.ParamInteger
 instance GHC.Classes.Eq OpenAPIPetstore.Model.ParamInteger
 instance GHC.Show.Show OpenAPIPetstore.Model.ParamFloat
@@ -1746,12 +1898,12 @@ instance GHC.Classes.Eq OpenAPIPetstore.Model.BooleanGroup
 instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.BodyText
 instance GHC.Show.Show OpenAPIPetstore.Model.BodyText
 instance GHC.Classes.Eq OpenAPIPetstore.Model.BodyText
+instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.BodyDouble
+instance GHC.Show.Show OpenAPIPetstore.Model.BodyDouble
+instance GHC.Classes.Eq OpenAPIPetstore.Model.BodyDouble
 instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.BodyBool
 instance GHC.Show.Show OpenAPIPetstore.Model.BodyBool
 instance GHC.Classes.Eq OpenAPIPetstore.Model.BodyBool
-instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.Body
-instance GHC.Show.Show OpenAPIPetstore.Model.Body
-instance GHC.Classes.Eq OpenAPIPetstore.Model.Body
 instance GHC.Show.Show OpenAPIPetstore.Model.ApiKey
 instance GHC.Classes.Eq OpenAPIPetstore.Model.ApiKey
 instance GHC.Show.Show OpenAPIPetstore.Model.AdditionalMetadata
@@ -1835,12 +1987,16 @@ instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.E'ArrayEnum
 instance Web.Internal.HttpApiData.ToHttpApiData OpenAPIPetstore.Model.E'ArrayEnum
 instance Web.Internal.HttpApiData.FromHttpApiData OpenAPIPetstore.Model.E'ArrayEnum
 instance OpenAPIPetstore.MimeTypes.MimeRender OpenAPIPetstore.MimeTypes.MimeMultipartFormData OpenAPIPetstore.Model.E'ArrayEnum
+instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.XmlItem
+instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.XmlItem
 instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.User
 instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.User
+instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.TypeHolderExample
+instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.TypeHolderExample
+instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.TypeHolderDefault
+instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.TypeHolderDefault
 instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.Tag
 instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.Tag
-instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.StringBooleanMap
-instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.StringBooleanMap
 instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.SpecialModelName
 instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.SpecialModelName
 instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.ArrayTest
@@ -1887,8 +2043,6 @@ instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.ArrayOfArrayOf
 instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.ArrayOfArrayOfNumberOnly
 instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.ApiResponse
 instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.ApiResponse
-instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.AnimalFarm
-instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.AnimalFarm
 instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.Animal
 instance Data.Aeson.Types.ToJSON.ToJSON OpenAPIPetstore.Model.Animal
 instance Data.Aeson.Types.FromJSON.FromJSON OpenAPIPetstore.Model.AdditionalPropertiesClass
@@ -1912,7 +2066,7 @@ data CreateUser
 --   </pre>
 --   
 --   Creates list of users with given input array
-createUsersWithArrayInput :: (Consumes CreateUsersWithArrayInput contentType, MimeRender contentType User2) => ContentType contentType -> User2 -> OpenAPIPetstoreRequest CreateUsersWithArrayInput contentType NoContent MimeNoContent
+createUsersWithArrayInput :: (Consumes CreateUsersWithArrayInput contentType, MimeRender contentType Body) => ContentType contentType -> Body -> OpenAPIPetstoreRequest CreateUsersWithArrayInput contentType NoContent MimeNoContent
 data CreateUsersWithArrayInput
 
 -- | <pre>
@@ -1920,7 +2074,7 @@ data CreateUsersWithArrayInput
 --   </pre>
 --   
 --   Creates list of users with given input array
-createUsersWithListInput :: (Consumes CreateUsersWithListInput contentType, MimeRender contentType User2) => ContentType contentType -> User2 -> OpenAPIPetstoreRequest CreateUsersWithListInput contentType NoContent MimeNoContent
+createUsersWithListInput :: (Consumes CreateUsersWithListInput contentType, MimeRender contentType Body) => ContentType contentType -> Body -> OpenAPIPetstoreRequest CreateUsersWithListInput contentType NoContent MimeNoContent
 data CreateUsersWithListInput
 
 -- | <pre>
@@ -1967,6 +2121,7 @@ data LogoutUser
 updateUser :: (Consumes UpdateUser contentType, MimeRender contentType User) => ContentType contentType -> User -> Username -> OpenAPIPetstoreRequest UpdateUser contentType NoContent MimeNoContent
 data UpdateUser
 instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.User.UpdateUser OpenAPIPetstore.Model.User
+instance OpenAPIPetstore.MimeTypes.MimeType mtype => OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.User.UpdateUser mtype
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.UpdateUser OpenAPIPetstore.MimeTypes.MimeNoContent
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.LogoutUser OpenAPIPetstore.MimeTypes.MimeNoContent
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.LoginUser OpenAPIPetstore.MimeTypes.MimeXML
@@ -1974,11 +2129,14 @@ instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.LoginUser O
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.GetUserByName OpenAPIPetstore.MimeTypes.MimeXML
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.GetUserByName OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.DeleteUser OpenAPIPetstore.MimeTypes.MimeNoContent
-instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.User.CreateUsersWithListInput OpenAPIPetstore.Model.User2
+instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.User.CreateUsersWithListInput OpenAPIPetstore.Model.Body
+instance OpenAPIPetstore.MimeTypes.MimeType mtype => OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.User.CreateUsersWithListInput mtype
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.CreateUsersWithListInput OpenAPIPetstore.MimeTypes.MimeNoContent
-instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.User.CreateUsersWithArrayInput OpenAPIPetstore.Model.User2
+instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.User.CreateUsersWithArrayInput OpenAPIPetstore.Model.Body
+instance OpenAPIPetstore.MimeTypes.MimeType mtype => OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.User.CreateUsersWithArrayInput mtype
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.CreateUsersWithArrayInput OpenAPIPetstore.MimeTypes.MimeNoContent
 instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.User.CreateUser OpenAPIPetstore.Model.User
+instance OpenAPIPetstore.MimeTypes.MimeType mtype => OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.User.CreateUser mtype
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.User.CreateUser OpenAPIPetstore.MimeTypes.MimeNoContent
 
 
@@ -2004,7 +2162,7 @@ data DeleteOrder
 --   Returns a map of status codes to quantities
 --   
 --   AuthMethod: <a>AuthApiKeyApiKey</a>
-getInventory :: OpenAPIPetstoreRequest GetInventory MimeNoContent ((Map String Int)) MimeJSON
+getInventory :: OpenAPIPetstoreRequest GetInventory MimeNoContent (Map String Int) MimeJSON
 data GetInventory
 
 -- | <pre>
@@ -2026,6 +2184,7 @@ data GetOrderById
 placeOrder :: (Consumes PlaceOrder contentType, MimeRender contentType Order) => ContentType contentType -> Accept accept -> Order -> OpenAPIPetstoreRequest PlaceOrder contentType Order accept
 data PlaceOrder
 instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Store.PlaceOrder OpenAPIPetstore.Model.Order
+instance OpenAPIPetstore.MimeTypes.MimeType mtype => OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Store.PlaceOrder mtype
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Store.PlaceOrder OpenAPIPetstore.MimeTypes.MimeXML
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Store.PlaceOrder OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Store.GetOrderById OpenAPIPetstore.MimeTypes.MimeXML
@@ -2112,7 +2271,7 @@ data UpdatePet
 --   Updates a pet in the store with form data
 --   
 --   AuthMethod: <a>AuthOAuthPetstoreAuth</a>
-updatePetWithForm :: (Consumes UpdatePetWithForm MimeFormUrlEncoded) => PetId -> OpenAPIPetstoreRequest UpdatePetWithForm MimeFormUrlEncoded NoContent MimeNoContent
+updatePetWithForm :: Consumes UpdatePetWithForm MimeFormUrlEncoded => PetId -> OpenAPIPetstoreRequest UpdatePetWithForm MimeFormUrlEncoded NoContent MimeNoContent
 data UpdatePetWithForm
 
 -- | <pre>
@@ -2122,7 +2281,7 @@ data UpdatePetWithForm
 --   uploads an image
 --   
 --   AuthMethod: <a>AuthOAuthPetstoreAuth</a>
-uploadFile :: (Consumes UploadFile MimeMultipartFormData) => PetId -> OpenAPIPetstoreRequest UploadFile MimeMultipartFormData ApiResponse MimeJSON
+uploadFile :: Consumes UploadFile MimeMultipartFormData => PetId -> OpenAPIPetstoreRequest UploadFile MimeMultipartFormData ApiResponse MimeJSON
 data UploadFile
 
 -- | <pre>
@@ -2132,7 +2291,7 @@ data UploadFile
 --   uploads an image (required)
 --   
 --   AuthMethod: <a>AuthOAuthPetstoreAuth</a>
-uploadFileWithRequiredFile :: (Consumes UploadFileWithRequiredFile MimeMultipartFormData) => RequiredFile -> PetId -> OpenAPIPetstoreRequest UploadFileWithRequiredFile MimeMultipartFormData ApiResponse MimeJSON
+uploadFileWithRequiredFile :: Consumes UploadFileWithRequiredFile MimeMultipartFormData => RequiredFile -> PetId -> OpenAPIPetstoreRequest UploadFileWithRequiredFile MimeMultipartFormData ApiResponse MimeJSON
 data UploadFileWithRequiredFile
 instance OpenAPIPetstore.Core.HasOptionalParam OpenAPIPetstore.API.Pet.UploadFileWithRequiredFile OpenAPIPetstore.Model.AdditionalMetadata
 instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Pet.UploadFileWithRequiredFile OpenAPIPetstore.MimeTypes.MimeMultipartFormData
@@ -2184,11 +2343,21 @@ instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.FakeClassnameTag
 module OpenAPIPetstore.API.Fake
 
 -- | <pre>
+--   POST /fake/create_xml_item
+--   </pre>
+--   
+--   creates an XmlItem
+--   
+--   this route creates an XmlItem
+createXmlItem :: (Consumes CreateXmlItem contentType, MimeRender contentType XmlItem) => ContentType contentType -> XmlItem -> OpenAPIPetstoreRequest CreateXmlItem contentType NoContent MimeNoContent
+data CreateXmlItem
+
+-- | <pre>
 --   POST /fake/outer/boolean
 --   </pre>
 --   
 --   Test serialization of outer boolean types
-fakeOuterBooleanSerialize :: (Consumes FakeOuterBooleanSerialize contentType) => ContentType contentType -> Accept accept -> OpenAPIPetstoreRequest FakeOuterBooleanSerialize contentType Bool accept
+fakeOuterBooleanSerialize :: Consumes FakeOuterBooleanSerialize contentType => ContentType contentType -> Accept accept -> OpenAPIPetstoreRequest FakeOuterBooleanSerialize contentType Bool accept
 data FakeOuterBooleanSerialize
 
 -- | <pre>
@@ -2196,7 +2365,7 @@ data FakeOuterBooleanSerialize
 --   </pre>
 --   
 --   Test serialization of object with outer number type
-fakeOuterCompositeSerialize :: (Consumes FakeOuterCompositeSerialize contentType) => ContentType contentType -> Accept accept -> OpenAPIPetstoreRequest FakeOuterCompositeSerialize contentType OuterComposite accept
+fakeOuterCompositeSerialize :: Consumes FakeOuterCompositeSerialize contentType => ContentType contentType -> Accept accept -> OpenAPIPetstoreRequest FakeOuterCompositeSerialize contentType OuterComposite accept
 data FakeOuterCompositeSerialize
 
 -- | <pre>
@@ -2204,7 +2373,7 @@ data FakeOuterCompositeSerialize
 --   </pre>
 --   
 --   Test serialization of outer number types
-fakeOuterNumberSerialize :: (Consumes FakeOuterNumberSerialize contentType) => ContentType contentType -> Accept accept -> OpenAPIPetstoreRequest FakeOuterNumberSerialize contentType Double accept
+fakeOuterNumberSerialize :: Consumes FakeOuterNumberSerialize contentType => ContentType contentType -> Accept accept -> OpenAPIPetstoreRequest FakeOuterNumberSerialize contentType Double accept
 data FakeOuterNumberSerialize
 
 -- | <pre>
@@ -2212,7 +2381,7 @@ data FakeOuterNumberSerialize
 --   </pre>
 --   
 --   Test serialization of outer string types
-fakeOuterStringSerialize :: (Consumes FakeOuterStringSerialize contentType) => ContentType contentType -> Accept accept -> OpenAPIPetstoreRequest FakeOuterStringSerialize contentType Text accept
+fakeOuterStringSerialize :: Consumes FakeOuterStringSerialize contentType => ContentType contentType -> Accept accept -> OpenAPIPetstoreRequest FakeOuterStringSerialize contentType Text accept
 data FakeOuterStringSerialize
 
 -- | <pre>
@@ -2249,7 +2418,7 @@ data TestClientModel
 --   Fake endpoint for testing various parameters 假端點 偽のエンドポイント 가짜 엔드 포인트
 --   
 --   AuthMethod: <a>AuthBasicHttpBasicTest</a>
-testEndpointParameters :: (Consumes TestEndpointParameters MimeFormUrlEncoded) => Number -> ParamDouble -> PatternWithoutDelimiter -> Byte -> OpenAPIPetstoreRequest TestEndpointParameters MimeFormUrlEncoded NoContent MimeNoContent
+testEndpointParameters :: Consumes TestEndpointParameters MimeFormUrlEncoded => Number -> ParamDouble -> PatternWithoutDelimiter -> Byte -> OpenAPIPetstoreRequest TestEndpointParameters MimeFormUrlEncoded NoContent MimeNoContent
 data TestEndpointParameters
 
 -- | <pre>
@@ -2259,7 +2428,7 @@ data TestEndpointParameters
 --   To test enum parameters
 --   
 --   To test enum parameters
-testEnumParameters :: (Consumes TestEnumParameters MimeFormUrlEncoded) => OpenAPIPetstoreRequest TestEnumParameters MimeFormUrlEncoded NoContent MimeNoContent
+testEnumParameters :: Consumes TestEnumParameters MimeFormUrlEncoded => OpenAPIPetstoreRequest TestEnumParameters MimeFormUrlEncoded NoContent MimeNoContent
 data TestEnumParameters
 
 -- | <pre>
@@ -2277,7 +2446,7 @@ data TestGroupParameters
 --   </pre>
 --   
 --   test inline additionalProperties
-testInlineAdditionalProperties :: (Consumes TestInlineAdditionalProperties MimeJSON, MimeRender MimeJSON RequestBody) => RequestBody -> OpenAPIPetstoreRequest TestInlineAdditionalProperties MimeJSON NoContent MimeNoContent
+testInlineAdditionalProperties :: (Consumes TestInlineAdditionalProperties MimeJSON, MimeRender MimeJSON ParamMapMapStringText) => ParamMapMapStringText -> OpenAPIPetstoreRequest TestInlineAdditionalProperties MimeJSON NoContent MimeNoContent
 data TestInlineAdditionalProperties
 
 -- | <pre>
@@ -2285,11 +2454,11 @@ data TestInlineAdditionalProperties
 --   </pre>
 --   
 --   test json serialization of form data
-testJsonFormData :: (Consumes TestJsonFormData MimeFormUrlEncoded) => Param -> Param2 -> OpenAPIPetstoreRequest TestJsonFormData MimeFormUrlEncoded NoContent MimeNoContent
+testJsonFormData :: Consumes TestJsonFormData MimeFormUrlEncoded => Param -> Param2 -> OpenAPIPetstoreRequest TestJsonFormData MimeFormUrlEncoded NoContent MimeNoContent
 data TestJsonFormData
 instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.TestJsonFormData OpenAPIPetstore.MimeTypes.MimeFormUrlEncoded
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.TestJsonFormData OpenAPIPetstore.MimeTypes.MimeNoContent
-instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Fake.TestInlineAdditionalProperties OpenAPIPetstore.Model.RequestBody
+instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Fake.TestInlineAdditionalProperties OpenAPIPetstore.Model.ParamMapMapStringText
 instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.TestInlineAdditionalProperties OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.TestInlineAdditionalProperties OpenAPIPetstore.MimeTypes.MimeNoContent
 instance OpenAPIPetstore.Core.HasOptionalParam OpenAPIPetstore.API.Fake.TestGroupParameters OpenAPIPetstore.Model.StringGroup
@@ -2328,13 +2497,25 @@ instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Fake.TestBodyWith
 instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.TestBodyWithFileSchema OpenAPIPetstore.MimeTypes.MimeJSON
 instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.TestBodyWithFileSchema OpenAPIPetstore.MimeTypes.MimeNoContent
 instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Fake.FakeOuterStringSerialize OpenAPIPetstore.Model.BodyText
+instance OpenAPIPetstore.MimeTypes.MimeType mtype => OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.FakeOuterStringSerialize mtype
 instance OpenAPIPetstore.MimeTypes.MimeType mtype => OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.FakeOuterStringSerialize mtype
-instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Fake.FakeOuterNumberSerialize OpenAPIPetstore.Model.Body
+instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Fake.FakeOuterNumberSerialize OpenAPIPetstore.Model.BodyDouble
+instance OpenAPIPetstore.MimeTypes.MimeType mtype => OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.FakeOuterNumberSerialize mtype
 instance OpenAPIPetstore.MimeTypes.MimeType mtype => OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.FakeOuterNumberSerialize mtype
 instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Fake.FakeOuterCompositeSerialize OpenAPIPetstore.Model.OuterComposite
+instance OpenAPIPetstore.MimeTypes.MimeType mtype => OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.FakeOuterCompositeSerialize mtype
 instance OpenAPIPetstore.MimeTypes.MimeType mtype => OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.FakeOuterCompositeSerialize mtype
 instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Fake.FakeOuterBooleanSerialize OpenAPIPetstore.Model.BodyBool
+instance OpenAPIPetstore.MimeTypes.MimeType mtype => OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.FakeOuterBooleanSerialize mtype
 instance OpenAPIPetstore.MimeTypes.MimeType mtype => OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.FakeOuterBooleanSerialize mtype
+instance OpenAPIPetstore.Core.HasBodyParam OpenAPIPetstore.API.Fake.CreateXmlItem OpenAPIPetstore.Model.XmlItem
+instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.CreateXmlItem OpenAPIPetstore.MimeTypes.MimeXML
+instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.CreateXmlItem OpenAPIPetstore.MimeTypes.MimeTextxml
+instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.CreateXmlItem OpenAPIPetstore.MimeTypes.MimeTextxmlCharsetutf8
+instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.CreateXmlItem OpenAPIPetstore.MimeTypes.MimeTextxmlCharsetutf16
+instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.CreateXmlItem OpenAPIPetstore.MimeTypes.MimeXmlCharsetutf8
+instance OpenAPIPetstore.MimeTypes.Consumes OpenAPIPetstore.API.Fake.CreateXmlItem OpenAPIPetstore.MimeTypes.MimeXmlCharsetutf16
+instance OpenAPIPetstore.MimeTypes.Produces OpenAPIPetstore.API.Fake.CreateXmlItem OpenAPIPetstore.MimeTypes.MimeNoContent
 
 
 module OpenAPIPetstore.API.AnotherFake
@@ -2365,7 +2546,7 @@ additionalPropertiesClassMapPropertyL :: Lens_' AdditionalPropertiesClass (Maybe
 additionalPropertiesClassMapOfMapPropertyL :: Lens_' AdditionalPropertiesClass (Maybe (Map String (Map String Text)))
 
 -- | <a>animalClassName</a> Lens
-animalClassNameL :: Lens_' Animal (Text)
+animalClassNameL :: Lens_' Animal Text
 
 -- | <a>animalColor</a> Lens
 animalColorL :: Lens_' Animal (Maybe Text)
@@ -2413,7 +2594,7 @@ capitalizationScaEthFlowPointsL :: Lens_' Capitalization (Maybe Text)
 capitalizationAttNameL :: Lens_' Capitalization (Maybe Text)
 
 -- | <a>catClassName</a> Lens
-catClassNameL :: Lens_' Cat (Text)
+catClassNameL :: Lens_' Cat Text
 
 -- | <a>catColor</a> Lens
 catColorL :: Lens_' Cat (Maybe Text)
@@ -2425,7 +2606,7 @@ catDeclawedL :: Lens_' Cat (Maybe Bool)
 categoryIdL :: Lens_' Category (Maybe Integer)
 
 -- | <a>categoryName</a> Lens
-categoryNameL :: Lens_' Category (Text)
+categoryNameL :: Lens_' Category Text
 
 -- | <a>classModelClass</a> Lens
 classModelClassL :: Lens_' ClassModel (Maybe Text)
@@ -2434,7 +2615,7 @@ classModelClassL :: Lens_' ClassModel (Maybe Text)
 clientClientL :: Lens_' Client (Maybe Text)
 
 -- | <a>dogClassName</a> Lens
-dogClassNameL :: Lens_' Dog (Text)
+dogClassNameL :: Lens_' Dog Text
 
 -- | <a>dogColor</a> Lens
 dogColorL :: Lens_' Dog (Maybe Text)
@@ -2452,7 +2633,7 @@ enumArraysArrayEnumL :: Lens_' EnumArrays (Maybe [E'ArrayEnum])
 enumTestEnumStringL :: Lens_' EnumTest (Maybe E'EnumString)
 
 -- | <a>enumTestEnumStringRequired</a> Lens
-enumTestEnumStringRequiredL :: Lens_' EnumTest (E'EnumString)
+enumTestEnumStringRequiredL :: Lens_' EnumTest E'EnumString
 
 -- | <a>enumTestEnumInteger</a> Lens
 enumTestEnumIntegerL :: Lens_' EnumTest (Maybe E'EnumInteger)
@@ -2482,7 +2663,7 @@ formatTestInt32L :: Lens_' FormatTest (Maybe Int)
 formatTestInt64L :: Lens_' FormatTest (Maybe Integer)
 
 -- | <a>formatTestNumber</a> Lens
-formatTestNumberL :: Lens_' FormatTest (Double)
+formatTestNumberL :: Lens_' FormatTest Double
 
 -- | <a>formatTestFloat</a> Lens
 formatTestFloatL :: Lens_' FormatTest (Maybe Float)
@@ -2494,13 +2675,13 @@ formatTestDoubleL :: Lens_' FormatTest (Maybe Double)
 formatTestStringL :: Lens_' FormatTest (Maybe Text)
 
 -- | <a>formatTestByte</a> Lens
-formatTestByteL :: Lens_' FormatTest (ByteArray)
+formatTestByteL :: Lens_' FormatTest ByteArray
 
 -- | <a>formatTestBinary</a> Lens
 formatTestBinaryL :: Lens_' FormatTest (Maybe FilePath)
 
 -- | <a>formatTestDate</a> Lens
-formatTestDateL :: Lens_' FormatTest (Date)
+formatTestDateL :: Lens_' FormatTest Date
 
 -- | <a>formatTestDateTime</a> Lens
 formatTestDateTimeL :: Lens_' FormatTest (Maybe DateTime)
@@ -2509,7 +2690,7 @@ formatTestDateTimeL :: Lens_' FormatTest (Maybe DateTime)
 formatTestUuidL :: Lens_' FormatTest (Maybe Text)
 
 -- | <a>formatTestPassword</a> Lens
-formatTestPasswordL :: Lens_' FormatTest (Text)
+formatTestPasswordL :: Lens_' FormatTest Text
 
 -- | <a>hasOnlyReadOnlyBar</a> Lens
 hasOnlyReadOnlyBarL :: Lens_' HasOnlyReadOnly (Maybe Text)
@@ -2551,7 +2732,7 @@ modelList123listL :: Lens_' ModelList (Maybe Text)
 modelReturnReturnL :: Lens_' ModelReturn (Maybe Int)
 
 -- | <a>nameName</a> Lens
-nameNameL :: Lens_' Name (Int)
+nameNameL :: Lens_' Name Int
 
 -- | <a>nameSnakeCase</a> Lens
 nameSnakeCaseL :: Lens_' Name (Maybe Int)
@@ -2599,10 +2780,10 @@ petIdL :: Lens_' Pet (Maybe Integer)
 petCategoryL :: Lens_' Pet (Maybe Category)
 
 -- | <a>petName</a> Lens
-petNameL :: Lens_' Pet (Text)
+petNameL :: Lens_' Pet Text
 
 -- | <a>petPhotoUrls</a> Lens
-petPhotoUrlsL :: Lens_' Pet ([Text])
+petPhotoUrlsL :: Lens_' Pet [Text]
 
 -- | <a>petTags</a> Lens
 petTagsL :: Lens_' Pet (Maybe [Tag])
@@ -2624,6 +2805,36 @@ tagIdL :: Lens_' Tag (Maybe Integer)
 
 -- | <a>tagName</a> Lens
 tagNameL :: Lens_' Tag (Maybe Text)
+
+-- | <a>typeHolderDefaultStringItem</a> Lens
+typeHolderDefaultStringItemL :: Lens_' TypeHolderDefault Text
+
+-- | <a>typeHolderDefaultNumberItem</a> Lens
+typeHolderDefaultNumberItemL :: Lens_' TypeHolderDefault Double
+
+-- | <a>typeHolderDefaultIntegerItem</a> Lens
+typeHolderDefaultIntegerItemL :: Lens_' TypeHolderDefault Int
+
+-- | <a>typeHolderDefaultBoolItem</a> Lens
+typeHolderDefaultBoolItemL :: Lens_' TypeHolderDefault Bool
+
+-- | <a>typeHolderDefaultArrayItem</a> Lens
+typeHolderDefaultArrayItemL :: Lens_' TypeHolderDefault [Int]
+
+-- | <a>typeHolderExampleStringItem</a> Lens
+typeHolderExampleStringItemL :: Lens_' TypeHolderExample Text
+
+-- | <a>typeHolderExampleNumberItem</a> Lens
+typeHolderExampleNumberItemL :: Lens_' TypeHolderExample Double
+
+-- | <a>typeHolderExampleIntegerItem</a> Lens
+typeHolderExampleIntegerItemL :: Lens_' TypeHolderExample Int
+
+-- | <a>typeHolderExampleBoolItem</a> Lens
+typeHolderExampleBoolItemL :: Lens_' TypeHolderExample Bool
+
+-- | <a>typeHolderExampleArrayItem</a> Lens
+typeHolderExampleArrayItemL :: Lens_' TypeHolderExample [Int]
 
 -- | <a>userId</a> Lens
 userIdL :: Lens_' User (Maybe Integer)
@@ -2648,6 +2859,93 @@ userPhoneL :: Lens_' User (Maybe Text)
 
 -- | <a>userUserStatus</a> Lens
 userUserStatusL :: Lens_' User (Maybe Int)
+
+-- | <a>xmlItemAttributeString</a> Lens
+xmlItemAttributeStringL :: Lens_' XmlItem (Maybe Text)
+
+-- | <a>xmlItemAttributeNumber</a> Lens
+xmlItemAttributeNumberL :: Lens_' XmlItem (Maybe Double)
+
+-- | <a>xmlItemAttributeInteger</a> Lens
+xmlItemAttributeIntegerL :: Lens_' XmlItem (Maybe Int)
+
+-- | <a>xmlItemAttributeBoolean</a> Lens
+xmlItemAttributeBooleanL :: Lens_' XmlItem (Maybe Bool)
+
+-- | <a>xmlItemWrappedArray</a> Lens
+xmlItemWrappedArrayL :: Lens_' XmlItem (Maybe [Int])
+
+-- | <a>xmlItemNameString</a> Lens
+xmlItemNameStringL :: Lens_' XmlItem (Maybe Text)
+
+-- | <a>xmlItemNameNumber</a> Lens
+xmlItemNameNumberL :: Lens_' XmlItem (Maybe Double)
+
+-- | <a>xmlItemNameInteger</a> Lens
+xmlItemNameIntegerL :: Lens_' XmlItem (Maybe Int)
+
+-- | <a>xmlItemNameBoolean</a> Lens
+xmlItemNameBooleanL :: Lens_' XmlItem (Maybe Bool)
+
+-- | <a>xmlItemNameArray</a> Lens
+xmlItemNameArrayL :: Lens_' XmlItem (Maybe [Int])
+
+-- | <a>xmlItemNameWrappedArray</a> Lens
+xmlItemNameWrappedArrayL :: Lens_' XmlItem (Maybe [Int])
+
+-- | <a>xmlItemPrefixString</a> Lens
+xmlItemPrefixStringL :: Lens_' XmlItem (Maybe Text)
+
+-- | <a>xmlItemPrefixNumber</a> Lens
+xmlItemPrefixNumberL :: Lens_' XmlItem (Maybe Double)
+
+-- | <a>xmlItemPrefixInteger</a> Lens
+xmlItemPrefixIntegerL :: Lens_' XmlItem (Maybe Int)
+
+-- | <a>xmlItemPrefixBoolean</a> Lens
+xmlItemPrefixBooleanL :: Lens_' XmlItem (Maybe Bool)
+
+-- | <a>xmlItemPrefixArray</a> Lens
+xmlItemPrefixArrayL :: Lens_' XmlItem (Maybe [Int])
+
+-- | <a>xmlItemPrefixWrappedArray</a> Lens
+xmlItemPrefixWrappedArrayL :: Lens_' XmlItem (Maybe [Int])
+
+-- | <a>xmlItemNamespaceString</a> Lens
+xmlItemNamespaceStringL :: Lens_' XmlItem (Maybe Text)
+
+-- | <a>xmlItemNamespaceNumber</a> Lens
+xmlItemNamespaceNumberL :: Lens_' XmlItem (Maybe Double)
+
+-- | <a>xmlItemNamespaceInteger</a> Lens
+xmlItemNamespaceIntegerL :: Lens_' XmlItem (Maybe Int)
+
+-- | <a>xmlItemNamespaceBoolean</a> Lens
+xmlItemNamespaceBooleanL :: Lens_' XmlItem (Maybe Bool)
+
+-- | <a>xmlItemNamespaceArray</a> Lens
+xmlItemNamespaceArrayL :: Lens_' XmlItem (Maybe [Int])
+
+-- | <a>xmlItemNamespaceWrappedArray</a> Lens
+xmlItemNamespaceWrappedArrayL :: Lens_' XmlItem (Maybe [Int])
+
+-- | <a>xmlItemPrefixNsString</a> Lens
+xmlItemPrefixNsStringL :: Lens_' XmlItem (Maybe Text)
+
+-- | <a>xmlItemPrefixNsNumber</a> Lens
+xmlItemPrefixNsNumberL :: Lens_' XmlItem (Maybe Double)
+
+-- | <a>xmlItemPrefixNsInteger</a> Lens
+xmlItemPrefixNsIntegerL :: Lens_' XmlItem (Maybe Int)
+
+-- | <a>xmlItemPrefixNsBoolean</a> Lens
+xmlItemPrefixNsBooleanL :: Lens_' XmlItem (Maybe Bool)
+
+-- | <a>xmlItemPrefixNsArray</a> Lens
+xmlItemPrefixNsArrayL :: Lens_' XmlItem (Maybe [Int])
+
+-- | <a>xmlItemPrefixNsWrappedArray</a> Lens
+xmlItemPrefixNsWrappedArrayL :: Lens_' XmlItem (Maybe [Int])
 
 
 module OpenAPIPetstore
